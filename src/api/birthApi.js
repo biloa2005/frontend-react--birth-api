@@ -31,3 +31,25 @@ export const getBirthById = async (id) => {
 
   return response.data;
 };
+
+
+// ===============================
+// VALIDER UNE NAISSANCE
+// ===============================
+
+export const validateBirth = async (id) => {
+  const response = await api.post(`/births/${id}/validate`);
+
+  return response.data;
+};
+
+
+// ===============================
+// MODIFIER UNE NAISSANCE (PARTIEL)
+// ===============================
+
+export const updateBirth = async (id, payload) => {
+  const response = await api.put(`/births/${id}`, payload);
+
+  return response.data;
+};

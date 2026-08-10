@@ -132,6 +132,7 @@ const BirthTable = () => {
                 <td>
                   {birth.actNumber}
                 </td>
+                <th>Actions</th>
 
                 <td>
                   {birth.childFirstname}{" "}
@@ -154,6 +155,16 @@ const BirthTable = () => {
 
                 <td>
                   {birth.status}
+                </td>
+
+                <td>
+                  {birth.status !== "APPROVED" ? (
+                    <button className="btn btn-sm btn-primary" onClick={() => navigate(`/births/${birth.id || birth._id || birth.actNumber}/edit`)}>
+                      Modifier
+                    </button>
+                  ) : (
+                    <span className="text-muted">Verrouillé</span>
+                  )}
                 </td>
 
               </tr>

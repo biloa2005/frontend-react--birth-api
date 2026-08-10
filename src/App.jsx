@@ -15,6 +15,7 @@ import CreateBirth from "./pages/births/CreateBirth";
 import ValidateBirth from "./pages/births/ValidateBirth";
 import SearchBirth from "./pages/births/SearchBirth";
 import PrintBirth from "./pages/births/PrintBirth";
+import EditBirth from "./pages/births/EditBirth";
 
 function App() {
 
@@ -66,6 +67,11 @@ function App() {
           <Route
             path="/tout"
             element={<BirthTable />}
+          />
+
+          <Route
+            path="/births/:id/edit"
+            element={<EditBirth />}
           />
 
         </Route>
