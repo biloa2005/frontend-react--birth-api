@@ -10,7 +10,7 @@ import {
 import DashboardLayout from "./layouts/DashboardLayout";
 
 import Dashboard from "./pages/Dashboard";
-
+import BirthTable from "./pages/births/TableBirth";
 import CreateBirth from "./pages/births/CreateBirth";
 import ValidateBirth from "./pages/births/ValidateBirth";
 import SearchBirth from "./pages/births/SearchBirth";
@@ -63,8 +63,12 @@ function App() {
             element={<PrintBirth />}
           />
 
-        </Route>
+          <Route
+            path="/tout"
+            element={<BirthTable />}
+          />
 
+        </Route>
       </Routes>
 
     </BrowserRouter>

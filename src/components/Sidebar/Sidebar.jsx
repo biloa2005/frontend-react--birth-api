@@ -8,6 +8,7 @@ import {
   Printer,
   UserPlus,
   Search,
+  List,
   LogOut,
   Baby,
 } from "lucide-react";
@@ -112,6 +113,13 @@ const Sidebar = () => {
             to="/births/print"
             icon={Printer}
             label="Imprimer une naissance"
+            onClick={closeSidebar}
+          />
+
+          <MenuItem
+            to="/tout"
+            icon={List}
+            label="Toutes les naissances"
             onClick={closeSidebar}
           />
 
