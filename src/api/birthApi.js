@@ -53,3 +53,21 @@ export const updateBirth = async (id, payload) => {
 
   return response.data;
 };
+
+// ===============================
+// AJOUTER UNE PIÈCE JOINTE
+// ===============================
+
+export const uploadBirthAttachment = async (id, formData) => {
+  const response = await api.post(
+    `/births/${id}/attachments`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
+  return response.data;
+};

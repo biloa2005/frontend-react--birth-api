@@ -79,29 +79,13 @@ const BirthTable = () => {
 
           <tr>
 
-            <th>
-              N° Acte
-            </th>
-
-            <th>
-              Enfant
-            </th>
-
-            <th>
-              Date naissance
-            </th>
-
-            <th>
-              Lieu
-            </th>
-
-            <th>
-              Sexe
-            </th>
-
-            <th>
-              Statut
-            </th>
+            <th>N° Acte</th>
+            <th>Enfant</th>
+            <th>Date naissance</th>
+            <th>Lieu</th>
+            <th>Sexe</th>
+            <th>Statut</th>
+            <th>Actions</th>
 
           </tr>
 
@@ -115,7 +99,7 @@ const BirthTable = () => {
             <tr>
 
               <td
-                colSpan="6"
+                colSpan="7"
                 className="text-center"
               >
                 Aucune naissance
@@ -127,41 +111,40 @@ const BirthTable = () => {
 
             births.map((birth) => (
 
-              <tr key={birth.id}>
+              <tr key={birth.id ?? birth._id ?? birth.actNumber}>
+
+                <td>{birth.actNumber ?? birth.id}</td>
 
                 <td>
-                  {birth.actNumber}
-                </td>
-                <th>Actions</th>
-
-                <td>
-                  {birth.childFirstname}{" "}
-                  {birth.childLastname}
+                  {birth.childFirstname} {birth.childLastname}
                 </td>
 
                 <td>
-                  {new Date(
-                    birth.birthDate
-                  ).toLocaleDateString("fr-FR")}
+                  {birth.birthDate ? new Date(birth.birthDate).toLocaleDateString("fr-FR") : ""}
                 </td>
 
-                <td>
-                  {birth.birthPlace}
-                </td>
+                <td>{birth.birthPlace}</td>
 
-                <td>
-                  {birth.sex}
-                </td>
+                <td>{birth.sex}</td>
 
-                <td>
-                  {birth.status}
-                </td>
+                <td>{birth.status}</td>
 
-                <td>
+                <td className="d-flex gap-2">
                   {birth.status !== "APPROVED" ? (
-                    <button className="btn btn-sm btn-primary" onClick={() => navigate(`/births/${birth.id || birth._id || birth.actNumber}/edit`)}>
-                      Modifier
-                    </button>
+                    <>
+                      <button
+                        className="btn btn-sm btn-primary"
+                        onClick={() => navigate(`/births/${birth.id || birth._id || birth.actNumber}/edit`)}
+                      >
+                        Modifier
+                      </button>
+                      <button
+                        className="btn btn-sm btn-secondary"
+                        onClick={() => navigate(`/births/${birth.id || birth._id || birth.actNumber}/attachments`)}
+                      >
+                        Pièce jointe
+                      </button>
+                    </>
                   ) : (
                     <span className="text-muted">Verrouillé</span>
                   )}

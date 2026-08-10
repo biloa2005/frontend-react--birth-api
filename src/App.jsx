@@ -16,6 +16,7 @@ import ValidateBirth from "./pages/births/ValidateBirth";
 import SearchBirth from "./pages/births/SearchBirth";
 import PrintBirth from "./pages/births/PrintBirth";
 import EditBirth from "./pages/births/EditBirth";
+import UploadAttachment from "./pages/births/UploadAttachment";
 
 function App() {
 
@@ -72,6 +73,11 @@ function App() {
           <Route
             path="/births/:id/edit"
             element={<EditBirth />}
+          />
+
+          <Route
+            path="/births/:id/attachments"
+            element={<UploadAttachment />}
           />
 
         </Route>
