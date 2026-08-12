@@ -111,6 +111,16 @@ export const getBirthDashboard = async () => {
   return response.data;
 };
 
+// ===============================
+// RÉCUPÉRER L'HISTORIQUE D'UNE NAISSANCE
+// ===============================
+
+export const getBirthHistory = async (id) => {
+  const response = await api.get(`/births/${encodeURIComponent(id)}/history`);
+
+  return response.data;
+};
+
 // ===============================// SUPPRIMER UNE NAISSANCE NON VALIDÉE
 // ===============================
 

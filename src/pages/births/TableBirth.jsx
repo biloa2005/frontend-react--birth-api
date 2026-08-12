@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { getAllBirths, getBirthDetailsByPost, deleteBirth } from "../../api/birthApi";
+import { getAllBirths, getBirthDetailsByPost, getBirthHistory, deleteBirth } from "../../api/birthApi";
 
 const BirthTable = () => {
 
@@ -59,7 +58,23 @@ const BirthTable = () => {
     try {
       const res = await getBirthDetailsByPost(id);
       if (res?.success) {
-        setSelectedDetails(res.data ?? null);
+        const details = res.data ?? null;
+        setSelectedDetails(details);
+
+        // Try to populate unified `history` field from various shapes
+        let hist = details?.history ?? details?.histories ?? null;
+        if (!hist) {
+          try {
+            const hres = await getBirthHistory(id);
+            hist = hres?.data ?? hres ?? null;
+          } catch (hErr) {
+            console.warn('No history endpoint or failed to fetch history', hErr);
+          }
+        }
+
+        if (hist) {
+          setSelectedDetails((prev) => ({ ...(prev ?? {}), history: hist }));
+        }
       } else {
         setDetailError(res?.message || "Aucun acte trouvé.");
       }
@@ -345,9 +360,15 @@ const BirthTable = () => {
                       <div className="mt-3">
                         <strong>Historique :</strong>
                         <ul>
-                          {selectedDetails.history.map((h, i) => (
-                            <li key={i}>{h.action} - {h.by} - {h.date ? new Date(h.date).toLocaleString('fr-FR') : ''}</li>
-                          ))}
+                          {selectedDetails.history.map((h, i) => {
+                            const actor = h.userId ?? h.by ?? h.user ?? '';
+                            const date = h.createdAt ?? h.date ?? h.ts ?? null;
+                            return (
+                              <li key={h.id ?? i}>
+                                {h.action ?? h.type ?? 'ACTION'}{actor ? ` — ${actor}` : ''}{date ? ` — ${new Date(date).toLocaleString('fr-FR')}` : ''}
+                              </li>
+                            );
+                          })}
                         </ul>
                       </div>
                     )}
