@@ -69,9 +69,13 @@ const SearchBirth = () => {
               <strong>Parents :</strong>
               {Array.isArray(result.parents) && result.parents.length > 0 ? (
                 <ul>
-                  {result.parents.map((p, i) => (
-                    <li key={i}>{p.firstname ?? p.name ?? `Parent ${i+1}`}</li>
-                  ))}
+                  {result.parents.map((p, i) => {
+                    const name = p.firstname || p.name
+                      ? `${p.firstname ?? p.name}${p.lastname ? ' ' + p.lastname : ''}`
+                      : `Parent ${i+1}`;
+                    const profession = p.job ?? p.occupation ?? p.profession ?? p.metier ?? null;
+                    return <li key={i}>{name}{profession ? ` — ${profession}` : ''}</li>;
+                  })}
                 </ul>
               ) : (
                 <div>Aucun parent renseigné</div>

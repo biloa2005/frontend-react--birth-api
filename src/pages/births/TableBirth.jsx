@@ -76,6 +76,30 @@ const BirthTable = () => {
     setDetailError("");
   };
 
+  const renderParentInfo = (p, i) => {
+    if (p == null) return `Parent ${i + 1}`;
+
+    // If parent is a primitive (string/number) just show it
+    if (typeof p === 'string' || typeof p === 'number') return String(p);
+
+    // Support nested shapes
+    const person = p.person ?? p.parent ?? p;
+
+    const first = person.firstname ?? person.firstName ?? person.name ?? person.fullName ?? null;
+    const last = person.lastname ?? person.lastName ?? person.surname ?? null;
+    const cin = person.cin ?? person.CIN ?? null;
+    const profession = person.job ?? person.occupation ?? person.profession ?? person.metier ?? person.work ?? person.emploi ?? null;
+
+    const name = first || last ? `${first ?? ''}${first && last ? ' ' : ''}${last ?? ''}`.trim() : null;
+
+    const parts = [];
+    if (name) parts.push(name);
+    if (profession) parts.push(`Métier: ${profession}`);
+    if (cin) parts.push(`CIN: ${cin}`);
+
+    return parts.length > 0 ? parts.join(' — ') : `Parent ${i + 1}`;
+  };
+
 
   if (loading) {
     return <p>Chargement...</p>;
@@ -229,19 +253,47 @@ const BirthTable = () => {
                     <p><strong>Lieu :</strong> {selectedDetails.birthPlace}</p>
                     <p><strong>Sexe :</strong> {selectedDetails.sex}</p>
 
-                    <div className="mt-3">
-                      <strong>Parents :</strong>
-                      {Array.isArray(selectedDetails.parents) && selectedDetails.parents.length > 0 ? (
-                        <ul>
-                          {selectedDetails.parents.map((p, i) => (
-                            <li key={i}>{p.firstname ?? p.name ?? `Parent ${i+1}`} {p.lastname ? ` ${p.lastname}` : ''} {p.cin ? ` - CIN: ${p.cin}` : ''}</li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <div>Aucun parent renseigné</div>
-                      )}
-                    </div>
+                   <div className="mt-3">
+  <strong>Parents :</strong>
 
+  {selectedDetails.parents &&
+  Array.isArray(selectedDetails.parents) &&
+  selectedDetails.parents.length > 0 ? (
+    selectedDetails.parents.map((parent, index) => (
+      <div key={parent.id ?? index} className="mt-3">
+
+        <h6>Père</h6>
+
+        <p>
+          <strong>Nom :</strong>{" "}
+          {parent.fatherName || "Non renseigné"}
+        </p>
+
+        <p>
+          <strong>Métier :</strong>{" "}
+          {parent.fatherJob || "Non renseigné"}
+        </p>
+
+        <hr />
+
+        <h6>Mère</h6>
+
+        <p>
+          <strong>Nom :</strong>{" "}
+          {parent.motherName || "Non renseigné"}
+        </p>
+
+        <p>
+          <strong>Métier :</strong>{" "}
+          {parent.motherJob || "Non renseigné"}
+        </p>
+
+      </div>
+    ))
+  ) : (
+    <p>Aucun parent renseigné</p>
+  )}
+</div>
                     <div className="mt-3">
                       <strong>Pièces jointes :</strong>
                       {Array.isArray(selectedDetails.attachments) && selectedDetails.attachments.length > 0 ? (
