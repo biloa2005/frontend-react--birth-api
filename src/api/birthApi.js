@@ -102,6 +102,25 @@ export const searchBirthByActNumber = async (actNumber) => {
 };
 
 // ===============================
+// RÉCUPÉRER LES STATISTIQUES DU DASHBOARD DE NAISSANCES
+// ===============================
+
+export const getBirthDashboard = async () => {
+  const response = await api.get('/births/dashboard');
+
+  return response.data;
+};
+
+// ===============================// SUPPRIMER UNE NAISSANCE NON VALIDÉE
+// ===============================
+
+export const deleteBirth = async (id) => {
+  const response = await api.delete(`/births/${encodeURIComponent(id)}`);
+
+  return response.data;
+};
+
+// ===============================
 // RÉCUPÉRER UNE NAISSANCE (POST) PAR ID - DÉTAILS COMPLETS
 // ===============================
 

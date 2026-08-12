@@ -1,16 +1,23 @@
 import React, { useState } from "react";
-import { searchBirthByActNumber } from "../../api/birthApi";
+import { useNavigate } from "react-router-dom";
+import { searchBirthByActNumber, validateBirth, deleteBirth, printBirth } from "../../api/birthApi";
 
 const SearchBirth = () => {
+  const navigate = useNavigate();
   const [actNumber, setActNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
+  const [actionMessage, setActionMessage] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
 
   const handleSearch = async (e) => {
     e.preventDefault();
     setError("");
     setResult(null);
+    setActionMessage("");
+    setActionError("");
 
     if (!actNumber.trim()) {
       setError("Veuillez saisir un numéro d'acte.");
@@ -30,6 +37,78 @@ const SearchBirth = () => {
       setError(err?.response?.data?.message || err.message || "Erreur lors de la recherche.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleValidate = async () => {
+    if (!result?.id) return;
+    setActionLoading(true);
+    setActionMessage("");
+    setActionError("");
+
+    try {
+      const res = await validateBirth(result.id);
+      if (res?.success) {
+        setResult((prev) => ({ ...prev, status: "APPROVED" }));
+        setActionMessage(res.message || "Acte validé avec succès.");
+      } else {
+        setActionError(res?.message || "Impossible de valider l'acte.");
+      }
+    } catch (err) {
+      console.error(err);
+      setActionError(err?.response?.data?.message || err.message || "Erreur lors de la validation.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!result?.id) return;
+    if (!window.confirm("Confirmer la suppression de cet acte non validé ?")) return;
+
+    setActionLoading(true);
+    setActionMessage("");
+    setActionError("");
+
+    try {
+      const res = await deleteBirth(result.id);
+      if (res?.success) {
+        setResult(null);
+        setActionMessage(res.message || "Acte supprimé avec succès.");
+      } else {
+        setActionError(res?.message || "Impossible de supprimer l'acte.");
+      }
+    } catch (err) {
+      console.error(err);
+      setActionError(err?.response?.data?.message || err.message || "Erreur lors de la suppression.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handlePrint = async () => {
+    if (!result?.id) return;
+    setActionLoading(true);
+    setActionMessage("");
+    setActionError("");
+
+    try {
+      const blobData = await printBirth(result.id);
+      const blob = new Blob([blobData], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${result.actNumber || result.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      setActionMessage("Téléchargement du PDF lancé.");
+    } catch (err) {
+      console.error(err);
+      setActionError(err?.response?.data?.message || err.message || "Erreur lors de l'impression.");
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -94,6 +173,51 @@ const SearchBirth = () => {
                 <div>Aucune pièce jointe</div>
               )}
             </div>
+
+            <div className="mt-3 d-flex flex-wrap gap-2">
+              <button
+                className="btn btn-sm btn-primary"
+                onClick={() => navigate(`/births/${result.id}/edit`)}
+                disabled={actionLoading}
+              >
+                Modifier
+              </button>
+
+              {result.status === "PENDING" && (
+                <button
+                  className="btn btn-sm btn-danger"
+                  onClick={handleDelete}
+                  disabled={actionLoading}
+                >
+                  Supprimer
+                </button>
+              )}
+
+              {result.status !== "APPROVED" && (
+                <button
+                  className="btn btn-sm btn-success"
+                  onClick={handleValidate}
+                  disabled={actionLoading}
+                >
+                  Valider
+                </button>
+              )}
+
+              <button
+                className="btn btn-sm btn-secondary"
+                onClick={handlePrint}
+                disabled={actionLoading}
+              >
+                Imprimer
+              </button>
+            </div>
+
+            {(actionMessage || actionError) && (
+              <div className="mt-3">
+                {actionMessage && <div className="alert alert-success">{actionMessage}</div>}
+                {actionError && <div className="alert alert-danger">{actionError}</div>}
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { getAllBirths, getBirthDetailsByPost } from "../../api/birthApi";
+import { getAllBirths, getBirthDetailsByPost, deleteBirth } from "../../api/birthApi";
 
 const BirthTable = () => {
 
@@ -16,6 +16,7 @@ const BirthTable = () => {
   const [detailError, setDetailError] = useState("");
   const [selectedDetails, setSelectedDetails] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
 
   useEffect(() => {
@@ -74,6 +75,30 @@ const BirthTable = () => {
     setShowDetails(false);
     setSelectedDetails(null);
     setDetailError("");
+  };
+
+  const handleDeleteBirth = async (id) => {
+    if (!id) return;
+    if (!window.confirm("Confirmer la suppression de cette naissance non validée ?")) {
+      return;
+    }
+
+    setDeleteLoading(true);
+    setError("");
+
+    try {
+      const res = await deleteBirth(id);
+      if (res?.success) {
+        setBirths((prev) => prev.filter((birth) => (birth.id || birth._id || birth.actNumber) !== id));
+      } else {
+        setError(res?.message || "Impossible de supprimer la naissance.");
+      }
+    } catch (err) {
+      console.error(err);
+      setError(err?.response?.data?.message || err.message || "Erreur lors de la suppression.");
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   const renderParentInfo = (p, i) => {
@@ -192,6 +217,15 @@ const BirthTable = () => {
                   >
                     Détails
                   </button>
+                  {birth.status === "PENDING" && (
+                    <button
+                      className="btn btn-sm btn-danger"
+                      onClick={() => handleDeleteBirth(birth.id || birth._id || birth.actNumber)}
+                      disabled={deleteLoading}
+                    >
+                      Supprimer
+                    </button>
+                  )}
                   {birth.status !== "APPROVED" ? (
                     <>
                       <button
