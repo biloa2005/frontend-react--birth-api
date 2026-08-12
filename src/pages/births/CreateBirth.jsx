@@ -1,8 +1,21 @@
 import React, { useState } from "react";
 import { createBirth } from "../../api/birthApi";
 
-const CreateBirth = () => {
+import {
+  Baby,
+  UserRound,
+  MapPin,
+  CalendarDays,
+  VenusAndMars,
+  BriefcaseBusiness,
+  Building2,
+  CheckCircle2,
+  AlertCircle,
+  Save,
+  User,
+} from "lucide-react";
 
+const CreateBirth = () => {
   const [formData, setFormData] = useState({
     childFirstname: "",
     childLastname: "",
@@ -18,18 +31,14 @@ const CreateBirth = () => {
   });
 
   const [loading, setLoading] = useState(false);
-
   const [message, setMessage] = useState("");
-
   const [error, setError] = useState("");
-
 
   // ===============================
   // MODIFICATION DU FORMULAIRE
   // ===============================
 
   const handleChange = (e) => {
-
     const { name, value } = e.target;
 
     setFormData((previous) => ({
@@ -38,13 +47,11 @@ const CreateBirth = () => {
     }));
   };
 
-
   // ===============================
   // SOUMISSION
   // ===============================
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
     setLoading(true);
@@ -52,19 +59,19 @@ const CreateBirth = () => {
     setError("");
 
     try {
+      const response = await createBirth(formData);
 
-        const response = await createBirth(formData);
+      const data = response?.data ?? response;
 
-        // `createBirth` retourne `response.data` depuis l'API.
-        const data = response?.data ?? response;
+      console.log(data);
 
-        console.log(data);
+      const actNumber = data?.actNumber ?? data?.id ?? "N/A";
 
-        const actNumber = data?.actNumber ?? data?.id ?? "N/A";
+      setMessage(
+        `Naissance enregistrée avec succès. Numéro d'acte : ${actNumber}`
+      );
 
-        setMessage(`Naissance enregistrée. Numéro d'acte : ${actNumber}`);
-
-      // Réinitialiser le formulaire
+      // Réinitialiser
       setFormData({
         childFirstname: "",
         childLastname: "",
@@ -78,284 +85,631 @@ const CreateBirth = () => {
         fatherJob: "",
         motherJob: "",
       });
-
     } catch (error) {
-
       console.error(error);
 
       setError(
-        error.response?.data?.message ||
-        "Une erreur est survenue."
+        error?.response?.data?.message ||
+          "Une erreur est survenue lors de l'enregistrement."
       );
-
     } finally {
-
       setLoading(false);
-
     }
   };
 
-
   return (
-    <div className="container">
+    <div className="container-fluid py-4">
 
-      <h1 className="mb-4">
-        Enregistrer une naissance
-      </h1>
+      {/* ================================================= */}
+      {/* HEADER */}
+      {/* ================================================= */}
 
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
 
-      {/* MESSAGE SUCCÈS */}
+        <div>
+          <div className="d-flex align-items-center gap-3 mb-2">
+            <div
+              className="d-flex align-items-center justify-content-center rounded-3"
+              style={{
+                width: "50px",
+                height: "50px",
+                background: "#198754",
+                color: "white",
+              }}
+            >
+              <Baby size={28} />
+            </div>
+
+            <div>
+              <h1 className="fw-bold mb-0">
+                Enregistrer une naissance
+              </h1>
+
+              <p className="text-muted mb-0">
+                Création d'un nouvel acte de naissance
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-3 mt-md-0">
+          <span
+            className="badge rounded-pill px-3 py-2"
+            style={{
+              background: "#fff3cd",
+              color: "#856404",
+              border: "1px solid #ffe69c",
+            }}
+          >
+            <span className="me-2">●</span>
+            Nouveau dossier
+          </span>
+        </div>
+      </div>
+
+      {/* ================================================= */}
+      {/* ALERT SUCCESS */}
+      {/* ================================================= */}
 
       {message && (
-        <div className="alert alert-success">
-          {message}
+        <div
+          className="alert d-flex align-items-start gap-3 shadow-sm border-0 rounded-3"
+          style={{
+            background: "#d1e7dd",
+            color: "#0f5132",
+          }}
+        >
+          <CheckCircle2 size={24} className="flex-shrink-0" />
+
+          <div>
+            <strong>Enregistrement réussi</strong>
+
+            <div className="small mt-1">
+              {message}
+            </div>
+          </div>
         </div>
       )}
 
-
-      {/* MESSAGE ERREUR */}
+      {/* ================================================= */}
+      {/* ALERT ERROR */}
+      {/* ================================================= */}
 
       {error && (
-        <div className="alert alert-danger">
-          {error}
+        <div
+          className="alert d-flex align-items-start gap-3 shadow-sm border-0 rounded-3"
+          style={{
+            background: "#f8d7da",
+            color: "#842029",
+          }}
+        >
+          <AlertCircle size={24} className="flex-shrink-0" />
+
+          <div>
+            <strong>Erreur</strong>
+
+            <div className="small mt-1">
+              {error}
+            </div>
+          </div>
         </div>
       )}
 
+      {/* ================================================= */}
+      {/* FORM */}
+      {/* ================================================= */}
 
       <form onSubmit={handleSubmit}>
 
-        {/* ===================== */}
-        {/* ENFANT */}
-        {/* ===================== */}
+        {/* ================================================= */}
+        {/* INFORMATIONS ENFANT */}
+        {/* ================================================= */}
 
-        <h4 className="mb-3">
-          Informations de l'enfant
-        </h4>
+        <div className="card border-0 shadow-sm rounded-4 mb-4">
 
+          <div
+            className="card-header border-0 py-3 px-4"
+            style={{
+              background: "linear-gradient(90deg, #198754, #157347)",
+              color: "white",
+              borderRadius: "16px 16px 0 0",
+            }}
+          >
 
-        <div className="row">
+            <div className="d-flex align-items-center gap-3">
 
-          <div className="col-md-6 mb-3">
+              <div
+                className="rounded-circle d-flex align-items-center justify-content-center"
+                style={{
+                  width: "42px",
+                  height: "42px",
+                  background: "rgba(255,255,255,0.15)",
+                }}
+              >
+                <Baby size={23} />
+              </div>
 
-            <label className="form-label">
-              Prénom
-            </label>
+              <div>
+                <h5 className="mb-0 fw-bold">
+                  Informations de l'enfant
+                </h5>
 
-            <input
-              type="text"
-              name="childFirstname"
-              value={formData.childFirstname}
-              onChange={handleChange}
-              className="form-control"
-              required
-            />
+                <small className="opacity-75">
+                  Informations personnelles du nouveau-né
+                </small>
+              </div>
 
-          </div>
-
-
-          <div className="col-md-6 mb-3">
-
-            <label className="form-label">
-              Nom
-            </label>
-
-            <input
-              type="text"
-              name="childLastname"
-              value={formData.childLastname}
-              onChange={handleChange}
-              className="form-control"
-              required
-            />
+            </div>
 
           </div>
 
+          <div className="card-body p-4">
 
-          <div className="col-md-6 mb-3">
+            <div className="row g-4">
 
-            <label className="form-label">
-              Date de naissance
-            </label>
+              {/* Prénom */}
 
-            <input
-              type="date"
-              name="birthDate"
-              value={formData.birthDate}
-              onChange={handleChange}
-              className="form-control"
-              required
-            />
+              <div className="col-md-6">
 
-          </div>
+                <label className="form-label fw-semibold">
+                  Prénom
+                </label>
 
+                <div className="input-group">
 
-          <div className="col-md-6 mb-3">
+                  <span className="input-group-text bg-light border-end-0">
+                    <UserRound size={18} />
+                  </span>
 
-            <label className="form-label">
-              Lieu de naissance
-            </label>
+                  <input
+                    type="text"
+                    name="childFirstname"
+                    value={formData.childFirstname}
+                    onChange={handleChange}
+                    className="form-control border-start-0"
+                    placeholder="Ex : Jean"
+                    required
+                  />
 
-            <input
-              type="text"
-              name="birthPlace"
-              value={formData.birthPlace}
-              onChange={handleChange}
-              className="form-control"
-              required
-            />
+                </div>
 
-          </div>
+              </div>
 
+              {/* Nom */}
 
-          <div className="col-md-6 mb-3">
+              <div className="col-md-6">
 
-            <label className="form-label">
-              Sexe
-            </label>
+                <label className="form-label fw-semibold">
+                  Nom
+                </label>
 
-            <select
-              name="sex"
-              value={formData.sex}
-              onChange={handleChange}
-              className="form-select"
-              required
-            >
+                <div className="input-group">
 
-              <option value="">
-                Sélectionner
-              </option>
+                  <span className="input-group-text bg-light border-end-0">
+                    <UserRound size={18} />
+                  </span>
 
-              <option value="MALE">
-                Masculin
-              </option>
+                  <input
+                    type="text"
+                    name="childLastname"
+                    value={formData.childLastname}
+                    onChange={handleChange}
+                    className="form-control border-start-0"
+                    placeholder="Ex : Dupont"
+                    required
+                  />
 
-              <option value="FEMALE">
-                Féminin
-              </option>
+                </div>
 
-            </select>
+              </div>
 
-          </div>
+              {/* Date */}
 
+              <div className="col-md-6">
 
-          <div className="col-md-6 mb-3">
+                <label className="form-label fw-semibold">
+                  Date de naissance
+                </label>
 
-            <label className="form-label">
-              Centre
-            </label>
+                <div className="input-group">
 
-            <input
-              type="text"
-              name="centerId"
-              value={formData.centerId}
-              onChange={handleChange}
-              className="form-control"
-            />
+                  <span className="input-group-text bg-light border-end-0">
+                    <CalendarDays size={18} />
+                  </span>
+
+                  <input
+                    type="date"
+                    name="birthDate"
+                    value={formData.birthDate}
+                    onChange={handleChange}
+                    className="form-control border-start-0"
+                    required
+                  />
+
+                </div>
+
+              </div>
+
+              {/* Lieu */}
+
+              <div className="col-md-6">
+
+                <label className="form-label fw-semibold">
+                  Lieu de naissance
+                </label>
+
+                <div className="input-group">
+
+                  <span className="input-group-text bg-light border-end-0">
+                    <MapPin size={18} />
+                  </span>
+
+                  <input
+                    type="text"
+                    name="birthPlace"
+                    value={formData.birthPlace}
+                    onChange={handleChange}
+                    className="form-control border-start-0"
+                    placeholder="Ex : Hôpital Central de Yaoundé"
+                    required
+                  />
+
+                </div>
+
+              </div>
+
+              {/* Sexe */}
+
+              <div className="col-md-6">
+
+                <label className="form-label fw-semibold">
+                  Sexe
+                </label>
+
+                <div className="input-group">
+
+                  <span className="input-group-text bg-light border-end-0">
+                    <VenusAndMars size={18} />
+                  </span>
+
+                  <select
+                    name="sex"
+                    value={formData.sex}
+                    onChange={handleChange}
+                    className="form-select border-start-0"
+                    required
+                  >
+
+                    <option value="">
+                      Sélectionner le sexe
+                    </option>
+
+                    <option value="MALE">
+                      Masculin
+                    </option>
+
+                    <option value="FEMALE">
+                      Féminin
+                    </option>
+
+                  </select>
+
+                </div>
+
+              </div>
+
+              {/* Centre */}
+
+              <div className="col-md-6">
+
+                <label className="form-label fw-semibold">
+                  Centre d'état civil
+                </label>
+
+                <div className="input-group">
+
+                  <span className="input-group-text bg-light border-end-0">
+                    <Building2 size={18} />
+                  </span>
+
+                  <input
+                    type="text"
+                    name="centerId"
+                    value={formData.centerId}
+                    onChange={handleChange}
+                    className="form-control border-start-0"
+                    placeholder="Identifiant du centre"
+                  />
+
+                </div>
+
+              </div>
+
+            </div>
 
           </div>
 
         </div>
 
+        {/* ================================================= */}
+        {/* INFORMATIONS PARENTS */}
+        {/* ================================================= */}
 
-        {/* ===================== */}
-        {/* PARENTS */}
-        {/* ===================== */}
+        <div className="card border-0 shadow-sm rounded-4 mb-4">
 
-        <h4 className="mt-4 mb-3">
-          Informations des parents
-        </h4>
+          <div
+            className="card-header border-0 py-3 px-4"
+            style={{
+              background: "linear-gradient(90deg, #ffc107, #ffca2c)",
+              color: "#212529",
+              borderRadius: "16px 16px 0 0",
+            }}
+          >
 
+            <div className="d-flex align-items-center gap-3">
 
-        <div className="row">
+              <div
+                className="rounded-circle d-flex align-items-center justify-content-center"
+                style={{
+                  width: "42px",
+                  height: "42px",
+                  background: "rgba(0,0,0,0.08)",
+                }}
+              >
+                <User size={23} />
+              </div>
 
-          <div className="col-md-6 mb-3">
+              <div>
 
-            <label className="form-label">
-              Nom du père
-            </label>
+                <h5 className="mb-0 fw-bold">
+                  Informations des parents
+                </h5>
 
-            <input
-              type="text"
-              name="fatherName"
-              value={formData.fatherName}
-              onChange={handleChange}
-              className="form-control"
-              required
-            />
+                <small>
+                  Identité et profession des parents
+                </small>
 
-          </div>
+              </div>
 
-
-          <div className="col-md-6 mb-3">
-
-            <label className="form-label">
-              Nom de la mère
-            </label>
-
-            <input
-              type="text"
-              name="motherName"
-              value={formData.motherName}
-              onChange={handleChange}
-              className="form-control"
-              required
-            />
+            </div>
 
           </div>
 
+          <div className="card-body p-4">
 
-          <div className="col-md-6 mb-3">
+            <div className="row g-4">
 
-            <label className="form-label">
-              Profession du père
-            </label>
+              {/* ================= PERE ================= */}
 
-            <input
-              type="text"
-              name="fatherJob"
-              value={formData.fatherJob}
-              onChange={handleChange}
-              className="form-control"
-            />
+              <div className="col-md-6">
 
-          </div>
+                <div
+                  className="p-4 rounded-4 h-100"
+                  style={{
+                    background: "#f8f9fa",
+                    borderLeft: "4px solid #198754",
+                  }}
+                >
 
+                  <div className="d-flex align-items-center gap-2 mb-4">
 
-          <div className="col-md-6 mb-3">
+                    <div
+                      className="rounded-circle d-flex align-items-center justify-content-center"
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        background: "#d1e7dd",
+                        color: "#198754",
+                      }}
+                    >
+                      <UserRound size={20} />
+                    </div>
 
-            <label className="form-label">
-              Profession de la mère
-            </label>
+                    <h6 className="mb-0 fw-bold">
+                      Père
+                    </h6>
 
-            <input
-              type="text"
-              name="motherJob"
-              value={formData.motherJob}
-              onChange={handleChange}
-              className="form-control"
-            />
+                  </div>
+
+                  <div className="mb-3">
+
+                    <label className="form-label fw-semibold">
+                      Nom complet
+                    </label>
+
+                    <input
+                      type="text"
+                      name="fatherName"
+                      value={formData.fatherName}
+                      onChange={handleChange}
+                      className="form-control"
+                      placeholder="Nom et prénom du père"
+                      required
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <label className="form-label fw-semibold">
+                      Profession
+                    </label>
+
+                    <div className="input-group">
+
+                      <span className="input-group-text">
+                        <BriefcaseBusiness size={17} />
+                      </span>
+
+                      <input
+                        type="text"
+                        name="fatherJob"
+                        value={formData.fatherJob}
+                        onChange={handleChange}
+                        className="form-control"
+                        placeholder="Ex : Ingénieur"
+                      />
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* ================= MERE ================= */}
+
+              <div className="col-md-6">
+
+                <div
+                  className="p-4 rounded-4 h-100"
+                  style={{
+                    background: "#f8f9fa",
+                    borderLeft: "4px solid #dc3545",
+                  }}
+                >
+
+                  <div className="d-flex align-items-center gap-2 mb-4">
+
+                    <div
+                      className="rounded-circle d-flex align-items-center justify-content-center"
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        background: "#f8d7da",
+                        color: "#dc3545",
+                      }}
+                    >
+                      <UserRound size={20} />
+                    </div>
+
+                    <h6 className="mb-0 fw-bold">
+                      Mère
+                    </h6>
+
+                  </div>
+
+                  <div className="mb-3">
+
+                    <label className="form-label fw-semibold">
+                      Nom complet
+                    </label>
+
+                    <input
+                      type="text"
+                      name="motherName"
+                      value={formData.motherName}
+                      onChange={handleChange}
+                      className="form-control"
+                      placeholder="Nom et prénom de la mère"
+                      required
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <label className="form-label fw-semibold">
+                      Profession
+                    </label>
+
+                    <div className="input-group">
+
+                      <span className="input-group-text">
+                        <BriefcaseBusiness size={17} />
+                      </span>
+
+                      <input
+                        type="text"
+                        name="motherJob"
+                        value={formData.motherJob}
+                        onChange={handleChange}
+                        className="form-control"
+                        placeholder="Ex : Enseignante"
+                      />
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
 
           </div>
 
         </div>
 
+        {/* ================================================= */}
+        {/* FOOTER / ACTION */}
+        {/* ================================================= */}
 
-        {/* ===================== */}
-        {/* BOUTON */}
-        {/* ===================== */}
+        <div className="card border-0 shadow-sm rounded-4">
 
-        <button
-          type="submit"
-          className="btn btn-success mt-3"
-          disabled={loading}
-        >
+          <div className="card-body p-4">
 
-          {loading
-            ? "Enregistrement..."
-            : "Enregistrer la naissance"
-          }
+            <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
 
-        </button>
+              <div>
+
+                <div className="d-flex align-items-center gap-2">
+
+                  <CheckCircle2
+                    size={20}
+                    className="text-success"
+                  />
+
+                  <strong>
+                    Vérifiez les informations avant validation
+                  </strong>
+
+                </div>
+
+                <small className="text-muted">
+                  L'acte sera créé avec le statut « en attente ».
+                </small>
+
+              </div>
+
+              <button
+                type="submit"
+                className="btn btn-success px-4 py-3 rounded-3 fw-semibold"
+                disabled={loading}
+                style={{
+                  minWidth: "240px",
+                }}
+              >
+
+                {loading ? (
+                  <>
+                    <span
+                      className="spinner-border spinner-border-sm me-2"
+                      role="status"
+                    />
+
+                    Enregistrement...
+                  </>
+                ) : (
+                  <>
+                    <Save
+                      size={19}
+                      className="me-2"
+                    />
+
+                    Enregistrer la naissance
+                  </>
+                )}
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
 
       </form>
 
