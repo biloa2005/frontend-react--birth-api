@@ -129,7 +129,7 @@ const BirthTable = () => {
 
                 <td>{birth.status}</td>
 
-                <td className="d-flex gap-2">
+                <td className="d-flex gap-2 flex-wrap">
                   {birth.status !== "APPROVED" ? (
                     <>
                       <button
@@ -146,7 +146,14 @@ const BirthTable = () => {
                       </button>
                     </>
                   ) : (
-                    <span className="text-muted">Verrouillé</span>
+                    <>
+                      <button
+                        className="btn btn-sm btn-success"
+                        onClick={() => navigate(`/births/${birth.id || birth._id || birth.actNumber}/print`)}
+                      >
+                        Imprimer
+                      </button>
+                    </>
                   )}
                 </td>
 

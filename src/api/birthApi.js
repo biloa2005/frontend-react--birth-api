@@ -55,6 +55,25 @@ export const updateBirth = async (id, payload) => {
 };
 
 // ===============================
+// IMPRIMER UNE ACTE DE NAISSANCE
+// ===============================
+
+export const printBirth = async (id) => {
+  const response = await api.post(
+    `/births/${id}/print`,
+    {},
+    {
+      responseType: "blob",
+      headers: {
+        Accept: "application/pdf",
+      },
+    }
+  );
+
+  return response.data;
+};
+
+// ===============================
 // AJOUTER UNE PIÈCE JOINTE
 // ===============================
 

@@ -80,6 +80,11 @@ function App() {
             element={<UploadAttachment />}
           />
 
+          <Route
+            path="/births/:id/print"
+            element={<PrintBirth />}
+          />
+
         </Route>
       </Routes>
 

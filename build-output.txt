@@ -1,0 +1,13 @@
+
+> mon-projet-react@0.0.0 build
+> vite build
+
+[36mvite v8.2.1 [32mbuilding client environment for production...[36m[39m
+[2Ktransforming...✓ 1872 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.40 kB │ gzip:  0.27 kB
+dist/assets/index-H776oPRM.css  235.10 kB │ gzip: 32.43 kB
+dist/assets/index-D-5GZ_Pz.js   299.65 kB │ gzip: 96.37 kB
+
+[32m✓ built in 984ms[39m
