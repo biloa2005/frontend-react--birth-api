@@ -7,6 +7,7 @@ const ValidateBirth = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [copyMessage, setCopyMessage] = useState("");
 
   const loadBirths = async () => {
     try {
@@ -72,6 +73,19 @@ const ValidateBirth = () => {
     }
   };
 
+  const handleCopy = async (id) => {
+    if (!id) return;
+    try {
+      await navigator.clipboard.writeText(String(id));
+      setCopyMessage(`ID ${id} copié dans le presse-papiers`);
+      setTimeout(() => setCopyMessage(""), 3000);
+    } catch (err) {
+      console.error('Copy failed', err);
+      setCopyMessage("Impossible de copier l'ID");
+      setTimeout(() => setCopyMessage(""), 3000);
+    }
+  };
+
   return (
     <div className="container">
 
@@ -79,6 +93,7 @@ const ValidateBirth = () => {
 
       {message && <div className="alert alert-success">{message}</div>}
       {error && <div className="alert alert-danger">{error}</div>}
+      {copyMessage && <div className="alert alert-info">{copyMessage}</div>}
 
       <form onSubmit={handleValidate} className="mb-4">
         <div className="row g-2 align-items-end">
@@ -119,15 +134,41 @@ const ValidateBirth = () => {
                 <td colSpan="5" className="text-center">Aucune naissance à valider</td>
               </tr>
             ) : (
-              births.map((b) => (
-                <tr key={b.id || b._id || b.actNumber}>
-                  <td>{b.id ?? b._id ?? b.actNumber}</td>
-                  <td>{b.childFirstname} {b.childLastname}</td>
-                  <td>{b.birthDate ? new Date(b.birthDate).toLocaleDateString('fr-FR') : ''}</td>
-                  <td>{b.birthPlace}</td>
-                  <td>{b.status}</td>
-                </tr>
-              ))
+              births.map((b) => {
+                const rowId = b.id ?? b._id ?? b.actNumber;
+                return (
+                  <tr key={rowId}>
+                    <td>
+                      <div className="d-flex align-items-center gap-2">
+                        <span>{rowId}</span>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-secondary"
+                          onClick={() => handleCopy(rowId)}
+                          title="Copier l'ID"
+                          aria-label={`Copier l'ID ${rowId}`}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 16 16"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path d="M10 1.5H4a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h6a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5zM4 0h6a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V1a1 1 0 0 1 1-1z"/>
+                            <path d="M9 3.5H3a.5.5 0 0 0-.5.5V13a1 1 0 0 0 1 1h7.5a.5.5 0 0 0 .5-.5V4a.5.5 0 0 0-.5-.5H9z"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                    <td>{b.childFirstname} {b.childLastname}</td>
+                    <td>{b.birthDate ? new Date(b.birthDate).toLocaleDateString('fr-FR') : ''}</td>
+                    <td>{b.birthPlace}</td>
+                    <td>{b.status}</td>
+                  </tr>
+                )
+              })
             )}
           </tbody>
         </table>

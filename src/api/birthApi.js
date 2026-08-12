@@ -90,3 +90,13 @@ export const uploadBirthAttachment = async (id, formData) => {
 
   return response.data;
 };
+
+// ===============================
+// RECHERCHER UN ACTE PAR NUMÉRO D'ACTE
+// ===============================
+
+export const searchBirthByActNumber = async (actNumber) => {
+  const response = await api.post(`/births/search/${encodeURIComponent(actNumber)}`);
+
+  return response.data;
+};
