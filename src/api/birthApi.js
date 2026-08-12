@@ -100,3 +100,13 @@ export const searchBirthByActNumber = async (actNumber) => {
 
   return response.data;
 };
+
+// ===============================
+// RÉCUPÉRER UNE NAISSANCE (POST) PAR ID - DÉTAILS COMPLETS
+// ===============================
+
+export const getBirthDetailsByPost = async (id) => {
+  const response = await api.post(`/births/${encodeURIComponent(id)}`);
+
+  return response.data;
+};

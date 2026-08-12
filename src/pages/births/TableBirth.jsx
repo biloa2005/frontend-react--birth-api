@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { getAllBirths } from "../../api/birthApi";
+import { getAllBirths, getBirthDetailsByPost } from "../../api/birthApi";
 
 const BirthTable = () => {
 
@@ -12,6 +12,10 @@ const BirthTable = () => {
   const [loading, setLoading] = useState(true);
 
   const [error, setError] = useState("");
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState("");
+  const [selectedDetails, setSelectedDetails] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
 
 
   useEffect(() => {
@@ -43,6 +47,34 @@ const BirthTable = () => {
     loadBirths();
 
   }, []);
+
+  const handleShowDetails = async (id) => {
+    if (!id) return;
+    setDetailError("");
+    setSelectedDetails(null);
+    setShowDetails(true);
+    setDetailLoading(true);
+
+    try {
+      const res = await getBirthDetailsByPost(id);
+      if (res?.success) {
+        setSelectedDetails(res.data ?? null);
+      } else {
+        setDetailError(res?.message || "Aucun acte trouvé.");
+      }
+    } catch (err) {
+      console.error(err);
+      setDetailError(err?.response?.data?.message || err.message || "Erreur lors de la récupération des détails.");
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const closeDetails = () => {
+    setShowDetails(false);
+    setSelectedDetails(null);
+    setDetailError("");
+  };
 
 
   if (loading) {
@@ -130,6 +162,12 @@ const BirthTable = () => {
                 <td>{birth.status}</td>
 
                 <td className="d-flex gap-2 flex-wrap">
+                  <button
+                    className="btn btn-sm btn-info"
+                    onClick={() => handleShowDetails(birth.id || birth._id || birth.actNumber)}
+                  >
+                    Détails
+                  </button>
                   {birth.status !== "APPROVED" ? (
                     <>
                       <button
@@ -168,6 +206,80 @@ const BirthTable = () => {
       </table>
 
     </div>
+    {showDetails && (
+      <>
+        <div className="modal show d-block" tabIndex={-1} role="dialog">
+          <div className="modal-dialog modal-lg" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Détails de la naissance</h5>
+                <button type="button" className="btn-close" aria-label="Fermer" onClick={closeDetails}></button>
+              </div>
+              <div className="modal-body">
+                {detailLoading ? (
+                  <p>Chargement...</p>
+                ) : detailError ? (
+                  <div className="alert alert-danger">{detailError}</div>
+                ) : selectedDetails ? (
+                  <div>
+                    <p><strong>ID :</strong> {selectedDetails.id}</p>
+                    <p><strong>Numéro d'acte :</strong> {selectedDetails.actNumber}</p>
+                    <p><strong>Enfant :</strong> {selectedDetails.childFirstname} {selectedDetails.childLastname}</p>
+                    <p><strong>Date :</strong> {selectedDetails.birthDate ? new Date(selectedDetails.birthDate).toLocaleDateString('fr-FR') : ''}</p>
+                    <p><strong>Lieu :</strong> {selectedDetails.birthPlace}</p>
+                    <p><strong>Sexe :</strong> {selectedDetails.sex}</p>
+
+                    <div className="mt-3">
+                      <strong>Parents :</strong>
+                      {Array.isArray(selectedDetails.parents) && selectedDetails.parents.length > 0 ? (
+                        <ul>
+                          {selectedDetails.parents.map((p, i) => (
+                            <li key={i}>{p.firstname ?? p.name ?? `Parent ${i+1}`} {p.lastname ? ` ${p.lastname}` : ''} {p.cin ? ` - CIN: ${p.cin}` : ''}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <div>Aucun parent renseigné</div>
+                      )}
+                    </div>
+
+                    <div className="mt-3">
+                      <strong>Pièces jointes :</strong>
+                      {Array.isArray(selectedDetails.attachments) && selectedDetails.attachments.length > 0 ? (
+                        <ul>
+                          {selectedDetails.attachments.map((a, i) => (
+                            <li key={i}>{a.filename ?? a.name ?? `Fichier ${i+1}`}{a.url ? (<span> - <a href={a.url} target="_blank" rel="noreferrer">Ouvrir</a></span>) : null}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <div>Aucune pièce jointe</div>
+                      )}
+                    </div>
+
+                    {selectedDetails.history && selectedDetails.history.length > 0 && (
+                      <div className="mt-3">
+                        <strong>Historique :</strong>
+                        <ul>
+                          {selectedDetails.history.map((h, i) => (
+                            <li key={i}>{h.action} - {h.by} - {h.date ? new Date(h.date).toLocaleString('fr-FR') : ''}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                  </div>
+                ) : (
+                  <div>Aucun détail disponible.</div>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={closeDetails}>Fermer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="modal-backdrop show"></div>
+      </>
+    )}
     </div>
   );
 };
