@@ -514,6 +514,9 @@ const Dashboard = () => {
           background: #f6f8f7;
           padding: 28px;
           color: #1f2937;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
         }
 
         /* ================================
@@ -632,6 +635,8 @@ const Dashboard = () => {
           );
           gap: 18px;
           margin-bottom: 25px;
+          width: 100%;
+          max-width: 1200px;
         }
 
         .stat-card {
@@ -781,6 +786,8 @@ const Dashboard = () => {
             0.055
           );
           overflow: hidden;
+          width: 100%;
+          max-width: 1200px;
         }
 
         .section-header {
@@ -838,13 +845,22 @@ const Dashboard = () => {
 
         .table-container {
           width: 100%;
-          overflow-x: auto;
+          overflow-x: visible;
         }
 
         .birth-table {
           width: 100%;
           border-collapse: collapse;
-          min-width: 950px;
+          min-width: 0;
+          table-layout: auto;
+        }
+
+        /* center containers to avoid internal horizontal scroll */
+        .stats-grid,
+        .birth-section,
+        .table-container {
+          margin-left: auto;
+          margin-right: auto;
         }
 
         .birth-table thead {

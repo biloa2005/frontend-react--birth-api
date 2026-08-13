@@ -1293,6 +1293,9 @@ const BirthTable = () => {
           background: #f6f8f7;
           padding: 28px;
           color: #202b25;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
         }
 
         /* ================= HEADER ================= */
@@ -1440,6 +1443,8 @@ const BirthTable = () => {
           grid-template-columns: repeat(4, 1fr);
           gap: 15px;
           margin-bottom: 22px;
+          width: 100%;
+          max-width: 1200px;
         }
 
         .quick-card {
@@ -1510,6 +1515,8 @@ const BirthTable = () => {
             0,
             .055
           );
+          width: 100%;
+          max-width: 1200px;
         }
 
         .table-header {
@@ -1578,13 +1585,22 @@ const BirthTable = () => {
         /* ================= TABLE ================= */
 
         .table-wrapper {
-          overflow-x: auto;
+          overflow-x: visible;
+        }
+
+        /* Ensure table container is centered and doesn't force page scroll */
+        .table-wrapper,
+        .birth-card,
+        .quick-stats {
+          margin-left: auto;
+          margin-right: auto;
         }
 
         .birth-table {
           width: 100%;
           border-collapse: collapse;
-          min-width: 1050px;
+          min-width: 0;
+          table-layout: auto;
         }
 
         .birth-table thead {
