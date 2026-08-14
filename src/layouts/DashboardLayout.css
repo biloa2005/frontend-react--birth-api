@@ -1,19 +1,45 @@
-.dashboard-layout {
+/* =========================================================
+   DASHBOARD LAYOUT (RESPONSIVE FACEBOOK STYLE)
+========================================================= */
+
+.fb-layout {
   display: flex;
   min-height: 100vh;
+  background-color: var(--fb-bg);
+  width: 100%;
 }
 
-.dashboard-content {
+.fb-main-content {
   flex: 1;
-  margin-left: 280px;
-  padding: 24px;
-  background: #f8f9fa;
+  margin-left: var(--sidebar-width);
   min-height: 100vh;
+  background-color: var(--fb-bg);
+  transition: margin-left 0.28s ease;
+  width: calc(100% - var(--sidebar-width));
 }
 
-@media (max-width: 991px) {
-  .dashboard-content {
+.fb-content-wrapper {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 28px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 1200px) {
+  .fb-content-wrapper {
+    padding: 20px 20px;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .fb-main-content {
     margin-left: 0;
-    padding-top: 80px;
+    width: 100%;
+  }
+
+  .fb-content-wrapper {
+    padding: 16px 14px 80px 14px;
   }
 }

@@ -1,111 +1,276 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Facebook Neutrals */
+  --fb-bg: #f0f2f5;
+  --fb-card: #ffffff;
+  --fb-card-hover: #fafbfc;
+  --fb-border: #e4e6eb;
+  --fb-border-light: #f0f2f5;
+  --fb-hover: #f2f4f7;
+  --fb-active: #e7f3ff;
+  --fb-text-primary: #050505;
+  --fb-text-secondary: #65676b;
+  --fb-text-muted: #8a8d91;
+  --fb-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --fb-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --fb-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* Vert SIVEC (Primary) */
+  --sivec-green: #087f3e;
+  --sivec-green-hover: #066832;
+  --sivec-green-light: #e8f5e9;
+  --sivec-green-border: #a7f3d0;
+  --sivec-green-glow: rgba(8, 127, 62, 0.25);
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Rouge Rubis (Alertes / Rejet / Aujourd'hui) */
+  --sivec-red: #dc3545;
+  --sivec-red-hover: #b02a37;
+  --sivec-red-light: #fee2e2;
+  --sivec-red-border: #fecaca;
+  --sivec-red-glow: rgba(220, 53, 69, 0.25);
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  /* Jaune / Or (Attente / Avertissements / Étoile) */
+  --sivec-yellow: #f59e0b;
+  --sivec-yellow-hover: #d97706;
+  --sivec-yellow-light: #fef3c7;
+  --sivec-yellow-border: #fde68a;
+  --sivec-yellow-glow: rgba(245, 158, 11, 0.25);
+
+  /* Dimensions */
+  --sidebar-width: 280px;
+
+  /* Typographie */
+  --font-main: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-body {
-  margin: 0;
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
+html, body {
   margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
+  padding: 0;
+  background-color: var(--fb-bg);
+  color: var(--fb-text-primary);
+  font-family: var(--font-main);
   font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background-color: var(--fb-bg);
+  display: block;
+}
+
+/* Scrollbar élégante style Facebook */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #bcc0c4;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8a8d91;
+}
+
+/* =========================================================
+   Liseré Tricolore Cameroun (Vert, Rouge, Jaune)
+========================================================= */
+.cameroon-flag-bar {
+  display: flex;
+  height: 4px;
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  overflow: hidden;
+}
+
+.cameroon-flag-bar .flag-green {
+  flex: 1;
+  background-color: var(--sivec-green);
+}
+
+.cameroon-flag-bar .flag-red {
+  flex: 1;
+  background-color: var(--sivec-red);
+}
+
+.cameroon-flag-bar .flag-yellow {
+  flex: 1;
+  background-color: var(--sivec-yellow);
+}
+
+/* =========================================================
+   Boutons et Badges Communs (Facebook Style)
+========================================================= */
+.fb-card {
+  background: var(--fb-card);
+  border-radius: 12px;
+  border: 1px solid var(--fb-border);
+  box-shadow: var(--fb-shadow-sm);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.fb-card:hover {
+  box-shadow: var(--fb-shadow);
+}
+
+.fb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.fb-badge-green {
+  background-color: var(--sivec-green-light);
+  color: var(--sivec-green);
+  border: 1px solid var(--sivec-green-border);
+}
+
+.fb-badge-red {
+  background-color: var(--sivec-red-light);
+  color: var(--sivec-red);
+  border: 1px solid var(--sivec-red-border);
+}
+
+.fb-badge-yellow {
+  background-color: var(--sivec-yellow-light);
+  color: var(--sivec-yellow-hover);
+  border: 1px solid var(--sivec-yellow-border);
+}
+
+/* Boutons principaux Facebook */
+.fb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-decoration: none;
+}
+
+.fb-btn:active {
+  transform: scale(0.98);
+}
+
+.fb-btn-green {
+  background-color: var(--sivec-green);
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px var(--sivec-green-glow);
+}
+
+.fb-btn-green:hover {
+  background-color: var(--sivec-green-hover);
+  box-shadow: 0 4px 10px var(--sivec-green-glow);
+  color: #ffffff;
+}
+
+.fb-btn-red {
+  background-color: var(--sivec-red);
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px var(--sivec-red-glow);
+}
+
+.fb-btn-red:hover {
+  background-color: var(--sivec-red-hover);
+  box-shadow: 0 4px 10px var(--sivec-red-glow);
+  color: #ffffff;
+}
+
+.fb-btn-yellow {
+  background-color: var(--sivec-yellow);
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px var(--sivec-yellow-glow);
+}
+
+.fb-btn-yellow:hover {
+  background-color: var(--sivec-yellow-hover);
+  box-shadow: 0 4px 10px var(--sivec-yellow-glow);
+  color: #ffffff;
+}
+
+.fb-btn-secondary {
+  background-color: #e4e6eb;
+  color: var(--fb-text-primary);
+}
+
+.fb-btn-secondary:hover {
+  background-color: #d8dadf;
+}
+
+.fb-btn-light-green {
+  background-color: var(--sivec-green-light);
+  color: var(--sivec-green);
+}
+
+.fb-btn-light-green:hover {
+  background-color: #c8e6c9;
+}
+
+.fb-btn-light-red {
+  background-color: var(--sivec-red-light);
+  color: var(--sivec-red);
+}
+
+.fb-btn-light-red:hover {
+  background-color: #ffcdd2;
+}
+
+/* Animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes pulseGlow {
+  0% {
+    transform: scale(0.96);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.96);
+    opacity: 0.8;
+  }
+}
+
+.pulse-glow {
+  animation: pulseGlow 2s infinite ease-in-out;
 }

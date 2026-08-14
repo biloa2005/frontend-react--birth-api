@@ -1,21 +1,21 @@
 import React, { useState } from "react";
-
 import {
   Menu,
   X,
-  Home,
-  CheckCircle,
-  Printer,
+  LayoutDashboard,
   UserPlus,
+  CheckCircle,
   Search,
-  List,
+  Printer,
+  FileSpreadsheet,
   LogOut,
-  Baby,
+  Building2,
+  MapPin,
+  Sparkles,
 } from "lucide-react";
 
 import ProfileSection from "./ProfileSection";
 import MenuItem from "./MenuItem";
-
 import "./Sidebar.css";
 
 const Sidebar = () => {
@@ -27,118 +27,158 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     console.log("Déconnexion");
-
-    // Plus tard :
-    // localStorage.removeItem("accessToken");
-    // localStorage.removeItem("refreshToken");
-
     closeSidebar();
   };
 
   return (
     <>
-      {/* Bouton burger mobile */}
+      {/* Bouton burger mobile flottant */}
       <button
-        className="sidebar-toggle"
+        className="fb-mobile-toggle"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Ouvrir le menu"
       >
-        {isOpen ? <X size={25} /> : <Menu size={25} />}
+        {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
-      {/* Overlay mobile */}
+      {/* Overlay sombre pour mobile */}
       {isOpen && (
-        <div
-          className="sidebar-overlay"
-          onClick={closeSidebar}
-        />
+        <div className="fb-sidebar-overlay" onClick={closeSidebar} />
       )}
 
-      {/* Sidebar */}
-      <aside className={`sidebar ${isOpen ? "sidebar-open" : ""}`}>
-
-        {/* Logo */}
-        <div className="sidebar-logo">
-
-          <div className="logo-icon">
-            <Baby size={27} />
+      {/* Sidebar principale (Fixe desktop / Tiroir mobile) */}
+      <aside className={`fb-sidebar ${isOpen ? "fb-sidebar-open" : ""}`}>
+        
+        {/* En-tête avec Logo SIVEC et Liseré Tricolore */}
+        <div className="fb-sidebar-brand">
+          <div className="cameroon-flag-bar">
+            <span className="flag-green"></span>
+            <span className="flag-red"></span>
+            <span className="flag-yellow"></span>
           </div>
 
-          <div>
-            <h4>SIVEC</h4>
-            <span>État Civil</span>
+          <div className="fb-brand-content">
+            <div className="fb-brand-icon">
+              <span className="fb-brand-star">★</span>
+            </div>
+            <div className="fb-brand-info">
+              <h2 className="fb-brand-title">SIVEC</h2>
+              <p className="fb-brand-subtitle">République du Cameroun</p>
+            </div>
           </div>
-
         </div>
 
-        {/* Profil */}
-        <ProfileSection />
+        {/* Profil utilisateur Facebook */}
+        <div className="fb-sidebar-profile-container">
+          <ProfileSection />
+        </div>
 
-        {/* Menu */}
-        <nav className="sidebar-nav">
+        {/* Navigation principale */}
+        <div className="fb-sidebar-scroll">
+          <div className="fb-sidebar-section">
+            <span className="fb-section-title">MENU PRINCIPAL</span>
 
-          <div className="menu-title">
-            MENU PRINCIPAL
+            <MenuItem
+              to="/dashboard"
+              icon={LayoutDashboard}
+              label="Tableau de bord"
+              iconColor="green"
+              onClick={closeSidebar}
+            />
+
+            <MenuItem
+              to="/births/create"
+              icon={UserPlus}
+              label="Enregistrer un acte"
+              iconColor="green"
+              onClick={closeSidebar}
+            />
+
+            <MenuItem
+              to="/births/validate"
+              icon={CheckCircle}
+              label="Valider les actes"
+              iconColor="yellow"
+              badgeText="Attente"
+              badgeColor="yellow"
+              onClick={closeSidebar}
+            />
+
+            <MenuItem
+              to="/tout"
+              icon={FileSpreadsheet}
+              label="Registre des naissances"
+              iconColor="green"
+              onClick={closeSidebar}
+            />
+
+            <MenuItem
+              to="/births/search"
+              icon={Search}
+              label="Rechercher un acte"
+              iconColor="yellow"
+              onClick={closeSidebar}
+            />
+
+            <MenuItem
+              to="/births/print"
+              icon={Printer}
+              label="Imprimer un acte"
+              iconColor="red"
+              onClick={closeSidebar}
+            />
           </div>
 
-          <MenuItem
-            to="/dashboard"
-            icon={Home}
-            label="Tableau de bord"
-            onClick={closeSidebar}
-          />
+          <div className="fb-sidebar-divider"></div>
 
-          <MenuItem
-            to="/births/create"
-            icon={UserPlus}
-            label="Enregistrer une naissance"
-            onClick={closeSidebar}
-          />
+          {/* Section Raccourcis Facebook */}
+          <div className="fb-sidebar-section">
+            <div className="fb-section-header">
+              <span className="fb-section-title">CENTRES D'ÉTAT CIVIL</span>
+              <Building2 size={14} className="text-muted" />
+            </div>
 
-          <MenuItem
-            to="/births/validate"
-            icon={CheckCircle}
-            label="Valider une naissance"
-            onClick={closeSidebar}
-          />
+            <div className="fb-shortcut-chip">
+              <MapPin size={15} className="text-green" />
+              <span>Mairie de Yaoundé I</span>
+            </div>
 
-          <MenuItem
-            to="/births/search"
-            icon={Search}
-            label="Rechercher une naissance"
-            onClick={closeSidebar}
-          />
+            <div className="fb-shortcut-chip">
+              <MapPin size={15} className="text-green" />
+              <span>Mairie de Douala V</span>
+            </div>
 
-          <MenuItem
-            to="/births/print"
-            icon={Printer}
-            label="Imprimer une naissance"
-            onClick={closeSidebar}
-          />
+            <div className="fb-shortcut-chip">
+              <MapPin size={15} className="text-yellow" />
+              <span>Hôpital Central (Maternité)</span>
+            </div>
+          </div>
 
-          <MenuItem
-            to="/tout"
-            icon={List}
-            label="Toutes les naissances"
-            onClick={closeSidebar}
-          />
+          {/* Carte Institutionnelle Cameroun */}
+          <div className="fb-cameroon-card">
+            <div className="fb-cameroon-card-header">
+              <Sparkles size={16} className="text-yellow" />
+              <span>Devise Nationale</span>
+            </div>
+            <p className="fb-cameroon-motto">
+              « Paix — Travail — Patrie »
+            </p>
+            <div className="cameroon-flag-bar">
+              <span className="flag-green"></span>
+              <span className="flag-red"></span>
+              <span className="flag-yellow"></span>
+            </div>
+          </div>
+        </div>
 
-        </nav>
-
-        {/* Déconnexion */}
-        <div className="sidebar-footer">
-
-          <button
-            className="logout-button"
-            onClick={handleLogout}
-          >
-            <LogOut size={20} />
-
-            <span>
-              Déconnexion
-            </span>
+        {/* Pied de page & Déconnexion */}
+        <div className="fb-sidebar-footer">
+          <button className="fb-logout-btn" onClick={handleLogout}>
+            <div className="fb-logout-icon">
+              <LogOut size={18} />
+            </div>
+            <span>Déconnexion</span>
           </button>
-
         </div>
 
       </aside>

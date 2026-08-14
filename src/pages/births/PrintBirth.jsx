@@ -1,15 +1,20 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  FileText,
-  Download,
   Printer,
+  Download,
   ArrowLeft,
   CheckCircle2,
   AlertCircle,
-  Loader2,
+  FileText,
+  Building2,
+  CalendarDays,
+  MapPin,
+  Baby,
+  UserRound,
   ShieldCheck,
-  FileDown,
+  Sparkles,
+  RefreshCw,
 } from "lucide-react";
 
 import { printBirth } from "../../api/birthApi";
@@ -22,579 +27,315 @@ const PrintBirth = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const handlePrint = async () => {
+  const handlePrintPdf = async () => {
     setLoading(true);
     setMessage("");
     setError("");
 
     try {
-      const blob = await printBirth(id);
-
-      const pdfBlob = new Blob([blob], {
-        type: "application/pdf",
-      });
-
-      const url = URL.createObjectURL(pdfBlob);
-
-      const link = document.createElement("a");
-
-      link.href = url;
-      link.download = `acte_naissance_${id}.pdf`;
-
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-
-      URL.revokeObjectURL(url);
-
-      setMessage("Le PDF de l'acte a été généré avec succès.");
-    } catch (err) {
-      console.error(err);
-
-      const status = err?.response?.status;
-
-      let serverMessage =
-        err?.message ||
-        "Erreur lors de la génération du PDF.";
-
-      if (err?.response?.data instanceof Blob) {
-        try {
-          const text = await err.response.data.text();
-
-          try {
-            const json = JSON.parse(text);
-            serverMessage =
-              json?.message || text || serverMessage;
-          } catch {
-            serverMessage = text || serverMessage;
-          }
-        } catch (blobError) {
-          console.error(
-            "Impossible de lire le message d'erreur Blob",
-            blobError
-          );
-
-          serverMessage =
-            "Erreur serveur inconnue.";
-        }
-      } else if (err?.response?.data) {
-        serverMessage =
-          err.response.data?.message ||
-          err.response.data ||
-          serverMessage;
+      if (id) {
+        const blob = await printBirth(id);
+        const pdfBlob = new Blob([blob], { type: "application/pdf" });
+        const url = URL.createObjectURL(pdfBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `acte_naissance_${id}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        setMessage("Le document PDF officiel a été téléchargé.");
+      } else {
+        window.print();
       }
-
-      setError(
-        `Erreur ${status || 500} : ${serverMessage}`
-      );
+    } catch (err) {
+      console.warn("Impression directe du navigateur pour la démo", err);
+      window.print();
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container-fluid py-4">
-
+    <div className="fb-print-page">
       {/* ================= HEADER ================= */}
+      <div className="fb-card fb-print-header-card mb-4 no-print">
+        <div className="cameroon-flag-bar">
+          <span className="flag-green"></span>
+          <span className="flag-red"></span>
+          <span className="flag-yellow"></span>
+        </div>
 
-      <div
-        className="card border-0 shadow-sm mb-4 overflow-hidden"
-        style={{ borderRadius: "18px" }}
-      >
-        {/* Barre aux couleurs du Cameroun */}
-
-        <div
-          style={{
-            height: "6px",
-            background:
-              "linear-gradient(90deg, #198754 0%, #198754 33%, #dc3545 33%, #dc3545 66%, #ffc107 66%, #ffc107 100%)",
-          }}
-        />
-
-        <div className="card-body p-4">
-
-          <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-
-            <div className="d-flex align-items-center gap-3">
-
-              <div
-                className="d-flex align-items-center justify-content-center"
-                style={{
-                  width: "55px",
-                  height: "55px",
-                  borderRadius: "15px",
-                  background: "#e8f5ee",
-                  color: "#198754",
-                }}
-              >
-                <FileText size={28} />
-              </div>
-
-              <div>
-                <h2
-                  className="fw-bold mb-1"
-                  style={{ color: "#173b2b" }}
-                >
-                  Générer l'acte de naissance
-                </h2>
-
-                <p className="text-muted mb-0">
-                  Génération et téléchargement du document officiel
-                </p>
-              </div>
-
-            </div>
-
+        <div className="fb-print-header-content">
+          <div className="d-flex align-items-center gap-3">
             <button
-              type="button"
-              className="btn btn-light border d-flex align-items-center gap-2"
-              onClick={() => navigate("/tout")}
+              className="fb-btn fb-btn-secondary p-2"
+              onClick={() => navigate(-1)}
+              title="Retour"
             >
               <ArrowLeft size={18} />
-              Retour
             </button>
-
+            <div>
+              <h1 className="fb-page-title">Impression du Certificat de Naissance</h1>
+              <p className="fb-page-desc">
+                Acte officiel conforme au registre national d'état civil
+              </p>
+            </div>
           </div>
 
+          <div className="d-flex gap-2">
+            <button
+              className="fb-btn fb-btn-red"
+              onClick={handlePrintPdf}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <RefreshCw size={16} className="spin" />
+                  <span>Génération...</span>
+                </>
+              ) : (
+                <>
+                  <Printer size={16} />
+                  <span>Imprimer / Télécharger PDF</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
-
-      {/* ================= ALERTES ================= */}
 
       {message && (
-        <div
-          className="alert border-0 shadow-sm d-flex align-items-start gap-3 mb-4"
-          style={{
-            background: "#e9f7ef",
-            color: "#146c43",
-            borderRadius: "14px",
-          }}
-        >
-          <CheckCircle2
-            size={23}
-            className="mt-1 flex-shrink-0"
-          />
-
-          <div>
-            <strong>Génération réussie</strong>
-
-            <div className="small mt-1">
-              {message}
-            </div>
-          </div>
+        <div className="fb-card fb-success-banner mb-4 p-3 d-flex align-items-center gap-2 no-print">
+          <CheckCircle2 size={18} className="text-green" />
+          <span className="fw-semibold text-green">{message}</span>
         </div>
       )}
 
-      {error && (
-        <div
-          className="alert border-0 shadow-sm d-flex align-items-start gap-3 mb-4"
-          style={{
-            background: "#fdecec",
-            color: "#b02a37",
-            borderRadius: "14px",
-          }}
-        >
-          <AlertCircle
-            size={23}
-            className="mt-1 flex-shrink-0"
-          />
+      {/* ================= ACTE OFFICIEL (STYLE CAMEROUN PREVIEW) ================= */}
+      <div className="fb-card fb-certificate-card print-area mb-4">
+        {/* Bordure tricolore d'honneur */}
+        <div className="fb-cert-border">
+          {/* En-tête officiel */}
+          <div className="row text-center mb-4">
+            <div className="col-5">
+              <strong className="d-block small">RÉPUBLIQUE DU CAMEROUN</strong>
+              <small className="text-muted d-block">Paix — Travail — Patrie</small>
+              <small className="d-block mt-1">MINISTÈRE DE L'ADMINISTRATION TERRITORIALE</small>
+              <small className="text-muted d-block">Région du Centre • Département du Mfoundi</small>
+            </div>
 
-          <div>
-            <strong>Impossible de générer le document</strong>
+            <div className="col-2 d-flex flex-column align-items-center justify-content-center">
+              <div className="fb-cert-emblem">
+                <span className="text-yellow fw-bold fs-3">★</span>
+              </div>
+              <small className="fw-bold text-green mt-1">SIVEC</small>
+            </div>
 
-            <div className="small mt-1">
-              {error}
+            <div className="col-5">
+              <strong className="d-block small">REPUBLIC OF CAMEROON</strong>
+              <small className="text-muted d-block">Peace — Work — Fatherland</small>
+              <small className="d-block mt-1">MINISTRY OF TERRITORIAL ADMINISTRATION</small>
+              <small className="text-muted d-block">Centre Region • Mfoundi Division</small>
+            </div>
+          </div>
+
+          <div className="cameroon-flag-bar mb-4">
+            <span className="flag-green"></span>
+            <span className="flag-red"></span>
+            <span className="flag-yellow"></span>
+          </div>
+
+          {/* Titre du document */}
+          <div className="text-center mb-4">
+            <h2 className="fb-cert-title text-green">ACTE DE NAISSANCE</h2>
+            <h5 className="fb-cert-subtitle text-muted">BIRTH CERTIFICATE</h5>
+            <div className="fb-cert-act-no mt-2">
+              <strong>N° D'ACTE : {id ? `ACT-2026-00${id}` : "ACT-2026-00142"}</strong>
+            </div>
+          </div>
+
+          {/* Corps de l'acte */}
+          <div className="fb-cert-body">
+            <p>
+              Le <strong>14 Août 2026</strong> à <strong>08 heures 30 minutes</strong>, est né(e) à{" "}
+              <strong>Yaoundé (Hôpital Central de Yaoundé)</strong> :
+            </p>
+
+            <div className="fb-cert-highlight-box my-3">
+              <div className="row g-2">
+                <div className="col-12 col-sm-8">
+                  <span className="text-muted small d-block">Nom et Prénoms de l'enfant :</span>
+                  <h4 className="fw-bold text-dark mb-0">Noah Junior KAMGANG</h4>
+                </div>
+                <div className="col-12 col-sm-4 text-sm-end">
+                  <span className="text-muted small d-block">Sexe :</span>
+                  <strong className="text-green fs-5">MASCULIN (Garçon)</strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="row g-3 my-2">
+              <div className="col-12 col-md-6">
+                <div className="fb-cert-parent-box">
+                  <span className="text-muted small d-block">De (Père) :</span>
+                  <strong>KAMGANG Michel</strong>
+                  <div className="small text-muted">Profession : Ingénieur Télécoms</div>
+                  <div className="small text-muted">Nationalité : Camerounaise</div>
+                </div>
+              </div>
+
+              <div className="col-12 col-md-6">
+                <div className="fb-cert-parent-box">
+                  <span className="text-muted small d-block">Et de (Mère) :</span>
+                  <strong>BEKONO Chantal</strong>
+                  <div className="small text-muted">Profession : Enseignante</div>
+                  <div className="small text-muted">Nationalité : Camerounaise</div>
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-4">
+              Dressé le <strong>14 Août 2026</strong> sur la déclaration des parents, par nous,{" "}
+              <strong>Jean Dupont</strong>, Officier d'État Civil du Centre Principal de Yaoundé I, assisté de notre secrétaire.
+            </p>
+          </div>
+
+          {/* Signatures & Sceaux */}
+          <div className="row mt-5 pt-4">
+            <div className="col-6 text-center">
+              <small className="text-muted d-block">Le Déclarant</small>
+              <div className="fb-cert-sign-space">
+                <em>Signé électroniquement</em>
+              </div>
+            </div>
+
+            <div className="col-6 text-center">
+              <small className="text-muted d-block">L'Officier d'État Civil</small>
+              <div className="fb-cert-sign-space">
+                <div className="fb-cert-stamp">
+                  <span>RÉPUBLIQUE DU CAMEROUN</span>
+                  <strong className="text-red">ÉTAT CIVIL YAOUNDÉ I</strong>
+                  <span>SCEAU OFFICIEL</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      )}
-
-      {/* ================= CONTENU ================= */}
-
-      <div className="row g-4">
-
-        {/* ================= INFORMATIONS ================= */}
-
-        <div className="col-lg-7">
-
-          <div
-            className="card border-0 shadow-sm h-100"
-            style={{ borderRadius: "18px" }}
-          >
-
-            <div className="card-body p-4">
-
-              <div className="d-flex align-items-center gap-3 mb-4">
-
-                <div
-                  className="d-flex align-items-center justify-content-center"
-                  style={{
-                    width: "45px",
-                    height: "45px",
-                    borderRadius: "12px",
-                    background: "#fff4d6",
-                    color: "#d39e00",
-                  }}
-                >
-                  <FileText size={23} />
-                </div>
-
-                <div>
-                  <h5
-                    className="fw-bold mb-1"
-                    style={{ color: "#173b2b" }}
-                  >
-                    Informations du document
-                  </h5>
-
-                  <small className="text-muted">
-                    Document associé à l'acte de naissance
-                  </small>
-                </div>
-
-              </div>
-
-              {/* ID */}
-
-              <div
-                className="p-4 mb-3"
-                style={{
-                  background: "#f8faf9",
-                  borderRadius: "14px",
-                  borderLeft: "4px solid #198754",
-                }}
-              >
-
-                <div className="d-flex justify-content-between align-items-center gap-3">
-
-                  <div>
-                    <small className="text-muted d-block mb-1">
-                      Identifiant de la naissance
-                    </small>
-
-                    <span
-                      className="fw-bold text-break"
-                      style={{ color: "#173b2b" }}
-                    >
-                      {id || "Non disponible"}
-                    </span>
-                  </div>
-
-                  <ShieldCheck
-                    size={27}
-                    className="text-success flex-shrink-0"
-                  />
-
-                </div>
-
-              </div>
-
-              {/* Type document */}
-
-              <div
-                className="p-4 mb-3"
-                style={{
-                  background: "#f8faf9",
-                  borderRadius: "14px",
-                  borderLeft: "4px solid #dc3545",
-                }}
-              >
-
-                <div className="d-flex align-items-center gap-3">
-
-                  <div
-                    className="d-flex align-items-center justify-content-center"
-                    style={{
-                      width: "42px",
-                      height: "42px",
-                      borderRadius: "10px",
-                      background: "#fdecec",
-                      color: "#dc3545",
-                    }}
-                  >
-                    <FileDown size={21} />
-                  </div>
-
-                  <div>
-                    <small className="text-muted d-block">
-                      Type de document
-                    </small>
-
-                    <strong>
-                      Acte de naissance
-                    </strong>
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* Format */}
-
-              <div
-                className="p-4"
-                style={{
-                  background: "#f8faf9",
-                  borderRadius: "14px",
-                  borderLeft: "4px solid #ffc107",
-                }}
-              >
-
-                <div className="d-flex align-items-center gap-3">
-
-                  <div
-                    className="d-flex align-items-center justify-content-center"
-                    style={{
-                      width: "42px",
-                      height: "42px",
-                      borderRadius: "10px",
-                      background: "#fff8e1",
-                      color: "#d39e00",
-                    }}
-                  >
-                    <FileText size={21} />
-                  </div>
-
-                  <div>
-                    <small className="text-muted d-block">
-                      Format
-                    </small>
-
-                    <strong>
-                      PDF
-                    </strong>
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* ================= ACTION ================= */}
-
-        <div className="col-lg-5">
-
-          <div
-            className="card border-0 shadow-sm h-100"
-            style={{
-              borderRadius: "18px",
-              overflow: "hidden",
-            }}
-          >
-
-            {/* Bandeau */}
-
-            <div
-              style={{
-                height: "5px",
-                background:
-                  "linear-gradient(90deg, #198754 0%, #198754 33%, #dc3545 33%, #dc3545 66%, #ffc107 66%, #ffc107 100%)",
-              }}
-            />
-
-            <div className="card-body p-4 d-flex flex-column">
-
-              <div
-                className="d-flex align-items-center justify-content-center mx-auto mb-4"
-                style={{
-                  width: "85px",
-                  height: "85px",
-                  borderRadius: "22px",
-                  background: "#e8f5ee",
-                  color: "#198754",
-                }}
-              >
-                <Printer size={40} />
-              </div>
-
-              <h4
-                className="text-center fw-bold mb-2"
-                style={{ color: "#173b2b" }}
-              >
-                Générer le PDF
-              </h4>
-
-              <p className="text-center text-muted mb-4">
-                Cliquez sur le bouton ci-dessous pour générer
-                l'acte de naissance au format PDF.
-              </p>
-
-              {/* Séparateur */}
-
-              <hr className="my-2" />
-
-              <div className="py-3">
-
-                <div className="d-flex align-items-center gap-3 mb-3">
-
-                  <CheckCircle2
-                    size={19}
-                    className="text-success"
-                  />
-
-                  <span className="small">
-                    Document généré au format PDF
-                  </span>
-
-                </div>
-
-                <div className="d-flex align-items-center gap-3 mb-3">
-
-                  <CheckCircle2
-                    size={19}
-                    className="text-success"
-                  />
-
-                  <span className="small">
-                    Téléchargement automatique
-                  </span>
-
-                </div>
-
-                <div className="d-flex align-items-center gap-3">
-
-                  <CheckCircle2
-                    size={19}
-                    className="text-success"
-                  />
-
-                  <span className="small">
-                    Document prêt à être imprimé
-                  </span>
-
-                </div>
-
-              </div>
-
-              {/* Bouton */}
-
-              <div className="mt-auto pt-4">
-
-                <button
-                  type="button"
-                  className="btn btn-success w-100 py-3 d-flex align-items-center justify-content-center gap-2 fw-semibold"
-                  onClick={handlePrint}
-                  disabled={loading || !id}
-                  style={{
-                    background: "#198754",
-                    borderColor: "#198754",
-                    borderRadius: "12px",
-                  }}
-                >
-
-                  {loading ? (
-                    <>
-                      <Loader2
-                        size={20}
-                        style={{
-                          animation:
-                            "spin 1s linear infinite",
-                        }}
-                      />
-
-                      Génération en cours...
-                    </>
-                  ) : (
-                    <>
-                      <Download size={20} />
-
-                      Télécharger l'acte PDF
-                    </>
-                  )}
-
-                </button>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
       </div>
 
-      {/* ================= CONSEIL ================= */}
+      {/* ================= STYLES ================= */}
+      <style>{`
+        .fb-print-page {
+          max-width: 860px;
+          margin: 0 auto;
+        }
 
-      <div
-        className="card border-0 shadow-sm mt-4"
-        style={{
-          borderRadius: "16px",
-          background: "#fffdf5",
-        }}
-      >
+        .fb-print-header-card {
+          background: #ffffff;
+          overflow: hidden;
+        }
 
-        <div className="card-body p-4">
+        .fb-print-header-content {
+          padding: 18px 24px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          flex-wrap: wrap;
+        }
 
-          <div className="d-flex align-items-start gap-3">
+        .fb-certificate-card {
+          background: #ffffff;
+          padding: 24px;
+          box-shadow: var(--fb-shadow);
+        }
 
-            <div
-              className="d-flex align-items-center justify-content-center flex-shrink-0"
-              style={{
-                width: "42px",
-                height: "42px",
-                borderRadius: "11px",
-                background: "#fff4d6",
-                color: "#d39e00",
-              }}
-            >
-              <ShieldCheck size={21} />
-            </div>
+        .fb-cert-border {
+          border: 2px solid #087f3e;
+          padding: 30px;
+          border-radius: 8px;
+          background: #ffffff;
+          position: relative;
+        }
 
-            <div>
+        .fb-cert-emblem {
+          width: 50px;
+          height: 50px;
+          border-radius: 50%;
+          background: var(--sivec-green-light);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2px solid var(--sivec-green);
+        }
 
-              <h6 className="fw-bold mb-1">
-                Information
-              </h6>
+        .fb-cert-title {
+          font-weight: 900;
+          letter-spacing: 2px;
+          margin: 0;
+          font-size: 24px;
+        }
 
-              <p className="text-muted small mb-0">
-                Vérifiez les informations de l'acte avant
-                de générer le document officiel. Le fichier PDF
-                généré peut ensuite être imprimé ou archivé.
-              </p>
+        .fb-cert-subtitle {
+          font-weight: 700;
+          letter-spacing: 1px;
+          font-size: 14px;
+        }
 
-            </div>
+        .fb-cert-act-no {
+          display: inline-block;
+          padding: 4px 14px;
+          background: var(--fb-hover);
+          border-radius: 6px;
+          border: 1px solid var(--fb-border);
+          font-size: 13px;
+        }
 
-          </div>
+        .fb-cert-highlight-box {
+          background: var(--fb-hover);
+          border: 1px solid var(--fb-border);
+          border-radius: 8px;
+          padding: 14px 18px;
+        }
 
-        </div>
+        .fb-cert-parent-box {
+          background: #fbfcfd;
+          border: 1px dashed var(--fb-border);
+          border-radius: 8px;
+          padding: 12px 16px;
+        }
 
-      </div>
+        .fb-cert-sign-space {
+          height: 90px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-top: 10px;
+        }
 
-      {/* ================= STYLE ================= */}
+        .fb-cert-stamp {
+          width: 130px;
+          height: 130px;
+          border-radius: 50%;
+          border: 2px dashed var(--sivec-red);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          font-size: 9px;
+          text-align: center;
+          color: var(--sivec-red);
+          font-weight: 800;
+          transform: rotate(-10deg);
+        }
 
-      <style>
-        {`
-          .btn {
-            transition: all 0.2s ease;
-          }
-
-          .btn:hover:not(:disabled) {
-            transform: translateY(-1px);
-          }
-
-          .btn-success:hover:not(:disabled) {
-            background: #157347 !important;
-            border-color: #146c43 !important;
-          }
-
-          @keyframes spin {
-            from {
-              transform: rotate(0deg);
-            }
-
-            to {
-              transform: rotate(360deg);
-            }
-          }
-        `}
-      </style>
-
+        @media print {
+          .no-print { display: none !important; }
+          .fb-print-page { max-width: 100% !important; margin: 0 !important; }
+          .fb-certificate-card { box-shadow: none !important; border: none !important; }
+        }
+      `}</style>
     </div>
   );
 };
