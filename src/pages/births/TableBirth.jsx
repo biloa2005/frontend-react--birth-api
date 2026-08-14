@@ -416,7 +416,9 @@ const BirthTable = () => {
                               {birth.childFirstname} {birth.childLastname}
                             </span>
                             <span className="small text-muted">
-                              {birth.sex === "M" ? "♂ Garçon" : "♀ Fille"}
+                              {birth.sex === "MALE" || birth.sex === "M"
+                                ? "♂ Garçon"
+                                : "♀ Fille"}
                             </span>
                           </div>
                         </div>
@@ -606,7 +608,9 @@ const BirthTable = () => {
                   <div className="col-6">
                     <small className="text-muted d-block">Sexe</small>
                     <strong>
-                      {selectedDetails.sex === "M" ? "Masculin (Garçon)" : "Féminin (Fille)"}
+                      {selectedDetails.sex === "MALE" || selectedDetails.sex === "M"
+                        ? "Masculin (Garçon)"
+                        : "Féminin (Fille)"}
                     </strong>
                   </div>
                   <div className="col-6">

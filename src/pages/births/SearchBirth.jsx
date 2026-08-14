@@ -286,7 +286,10 @@ const SearchBirth = () => {
                       : "—"}
                   </strong>
                   <span className="small text-muted">
-                    Sexe : {result.sex === "M" ? "Masculin (Garçon)" : "Féminin (Fille)"}
+                    Sexe :{" "}
+                    {result.sex === "MALE" || result.sex === "M"
+                      ? "Masculin (Garçon)"
+                      : "Féminin (Fille)"}
                   </span>
                 </div>
               </div>
