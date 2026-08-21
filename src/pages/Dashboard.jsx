@@ -1,44 +1,40 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Baby,
   CheckCircle2,
   Clock3,
   CalendarDays,
-  Users,
   FileText,
-  TrendingUp,
   RefreshCw,
   UserRound,
-  BriefcaseBusiness,
-  CircleAlert,
   UserPlus,
   Printer,
-  Search,
   MapPin,
   Sparkles,
   LayoutGrid,
   List,
   ShieldCheck,
   ChevronRight,
-  Send,
   Eye,
   Paperclip,
-  Share2,
   Check,
+  TrendingUp,
+  Search,
+  MoreHorizontal,
 } from "lucide-react";
 import { getBirthDashboard, validateBirth } from "../api/birthApi";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeFilter, setActiveFilter] = useState("ALL"); // ALL, APPROVED, PENDING, TODAY
-  const [viewMode, setViewMode] = useState("feed"); // "feed" | "table"
+  const [activeFilter, setActiveFilter] = useState("ALL");
+  const [viewMode, setViewMode] = useState("feed");
   const [validatingId, setValidatingId] = useState(null);
 
-  // Mock data si le serveur backend n'est pas actif pour garantir une démo visuelle riche
   const fallbackDashboard = {
     totalBirths: 142,
     approvedBirths: 128,
@@ -125,26 +121,6 @@ const Dashboard = () => {
           },
         ],
       },
-      {
-        id: "5",
-        actNumber: "ACT-2026-00138",
-        childFirstname: "Christian David",
-        childLastname: "ABENA",
-        birthDate: "2026-08-11T11:00:00.000Z",
-        birthPlace: "Garoua (Hôpital Régional)",
-        sex: "M",
-        status: "APPROVED",
-        centerId: "Centre Garoua",
-        createdAt: "2026-08-11T12:00:00.000Z",
-        parents: [
-          {
-            fatherName: "ABENA Jean-Pierre",
-            fatherJob: "Administrateur",
-            motherName: "YOMBI Carine",
-            motherJob: "Pharmacienne",
-          },
-        ],
-      },
     ],
   };
 
@@ -152,14 +128,16 @@ const Dashboard = () => {
     try {
       setLoading(true);
       setError("");
+
       const res = await getBirthDashboard();
+
       if (res && res.data) {
         setDashboard(res.data);
       } else {
         setDashboard(fallbackDashboard);
       }
     } catch (err) {
-      console.warn("API indisponible, chargement des données locales pour la démo", err);
+      console.warn("API indisponible, utilisation des données locales.", err);
       setDashboard(fallbackDashboard);
     } finally {
       setLoading(false);
@@ -172,14 +150,19 @@ const Dashboard = () => {
 
   const handleValidateQuick = async (id) => {
     setValidatingId(id);
+
     try {
       await validateBirth(id);
-      // Mettre à jour localement
+
       setDashboard((prev) => {
         if (!prev) return prev;
-        const updated = (prev.latestBirths || []).map((b) =>
-          b.id === id || b.actNumber === id ? { ...b, status: "APPROVED" } : b
+
+        const updated = (prev.latestBirths || []).map((birth) =>
+          birth.id === id || birth.actNumber === id
+            ? { ...birth, status: "APPROVED" }
+            : birth
         );
+
         return {
           ...prev,
           approvedBirths: (prev.approvedBirths || 0) + 1,
@@ -189,12 +172,16 @@ const Dashboard = () => {
       });
     } catch (err) {
       console.error(err);
-      // Simulation locale si le backend est hors ligne
+
       setDashboard((prev) => {
         if (!prev) return prev;
-        const updated = (prev.latestBirths || []).map((b) =>
-          b.id === id || b.actNumber === id ? { ...b, status: "APPROVED" } : b
+
+        const updated = (prev.latestBirths || []).map((birth) =>
+          birth.id === id || birth.actNumber === id
+            ? { ...birth, status: "APPROVED" }
+            : birth
         );
+
         return {
           ...prev,
           approvedBirths: (prev.approvedBirths || 0) + 1,
@@ -208,290 +195,421 @@ const Dashboard = () => {
   };
 
   const currentData = dashboard || fallbackDashboard;
-  const rawList = Array.isArray(currentData?.latestBirths) ? currentData.latestBirths : [];
+
+  const rawList = Array.isArray(currentData?.latestBirths)
+    ? currentData.latestBirths
+    : [];
 
   const filteredBirths = rawList.filter((birth) => {
-    if (activeFilter === "APPROVED") return birth.status === "APPROVED";
-    if (activeFilter === "PENDING") return birth.status === "PENDING";
+    if (activeFilter === "APPROVED") {
+      return birth.status === "APPROVED";
+    }
+
+    if (activeFilter === "PENDING") {
+      return birth.status === "PENDING";
+    }
+
     if (activeFilter === "TODAY") {
       const today = new Date().toISOString().slice(0, 10);
       return birth.createdAt?.startsWith(today);
     }
+
     return true;
   });
 
+  const approvedCount = rawList.filter(
+    (birth) => birth.status === "APPROVED"
+  ).length;
+
+  const pendingCount = rawList.filter(
+    (birth) => birth.status === "PENDING"
+  ).length;
+
+  const getInitials = (firstname = "", lastname = "") => {
+    return `${firstname.charAt(0)}${lastname.charAt(0)}`.toUpperCase();
+  };
+
   return (
-    <div className="fb-dashboard-feed">
-      {/* =========================================================
-         1. BANNIÈRE DE BIENVENUE FACEBOOK & BOUTON ACTUALISER
-      ========================================================= */}
-      <div className="fb-card fb-welcome-card mb-4">
-        <div className="cameroon-flag-bar">
-          <span className="flag-green"></span>
-          <span className="flag-red"></span>
-          <span className="flag-yellow"></span>
-        </div>
-
-        <div className="fb-welcome-content">
-          <div className="fb-welcome-left">
-            <div className="fb-welcome-icon-box">
-              <Sparkles size={24} className="text-yellow" />
-            </div>
-            <div>
-              <h1 className="fb-welcome-title">Fil d'actualité SIVEC</h1>
-              <p className="fb-welcome-desc">
-                Plateforme officielle de suivi et de gestion des actes de naissance du Cameroun
-              </p>
-            </div>
+    <div className="sivec-dashboard">
+      {/* TOP HEADER */}
+      <div className="dashboard-header">
+        <div>
+          <div className="dashboard-breadcrumb">
+            <span>Administration</span>
+            <ChevronRight size={14} />
+            <strong>Tableau de bord</strong>
           </div>
 
-          <button
-            className="fb-btn fb-btn-secondary"
-            onClick={loadDashboard}
-            disabled={loading}
-          >
-            <RefreshCw size={16} className={loading ? "spin text-green" : "text-green"} />
-            <span>Actualiser</span>
-          </button>
+          <h1 className="dashboard-title">
+            Tableau de bord
+          </h1>
+
+          <p className="dashboard-subtitle">
+            Vue d'ensemble des actes de naissance enregistrés dans le système.
+          </p>
+        </div>
+
+        <button
+          className="refresh-button"
+          onClick={loadDashboard}
+          disabled={loading}
+        >
+          <RefreshCw
+            size={17}
+            className={loading ? "rotate-icon" : ""}
+          />
+          {loading ? "Actualisation..." : "Actualiser"}
+        </button>
+      </div>
+
+      {/* WELCOME */}
+      <div className="welcome-panel">
+        <div className="welcome-decoration decoration-one"></div>
+        <div className="welcome-decoration decoration-two"></div>
+
+        <div className="welcome-content">
+          <div className="welcome-icon">
+            <ShieldCheck size={27} />
+          </div>
+
+          <div>
+            <span className="welcome-label">
+              <Sparkles size={14} />
+              Système SIVEC
+            </span>
+
+            <h2>Bienvenue sur votre espace administratif</h2>
+
+            <p>
+              Suivez, vérifiez et gérez les actes de naissance
+              enregistrés dans votre centre.
+            </p>
+          </div>
+        </div>
+
+        <div className="welcome-status">
+          <span className="status-dot"></span>
+          Système opérationnel
         </div>
       </div>
 
-      {/* =========================================================
-         2. STORIES / STATS CARDS REEL (VERT, ROUGE, JAUNE)
-      ========================================================= */}
-      <div className="fb-stories-grid mb-4">
-        {/* Story 1 : Total Naissances (Vert) */}
-        <div className="fb-story-card story-green">
-          <div className="fb-story-top">
-            <div className="fb-story-icon icon-green">
-              <Baby size={22} />
+      {/* STATISTICS */}
+      <div className="statistics-grid">
+        {/* TOTAL */}
+        <div className="stat-card stat-blue">
+          <div className="stat-top">
+            <div className="stat-icon">
+              <FileText size={21} />
             </div>
-            <span className="fb-story-pill pill-green">Registre</span>
+
+            <span className="stat-trend">
+              <TrendingUp size={13} />
+              Registre
+            </span>
           </div>
-          <div className="fb-story-body">
-            <h3 className="fb-story-number">
-              {currentData?.totalBirths?.toLocaleString("fr-FR") ?? 0}
-            </h3>
-            <p className="fb-story-label">Total des naissances</p>
-            <span className="fb-story-sub">Tous les actes enregistrés</span>
+
+          <div className="stat-number">
+            {currentData?.totalBirths?.toLocaleString("fr-FR") ?? 0}
           </div>
-          <div className="fb-story-bar bar-green"></div>
+
+          <div className="stat-label">
+            Total des actes
+          </div>
+
+          <div className="stat-description">
+            Tous les actes enregistrés
+          </div>
         </div>
 
-        {/* Story 2 : Validées (Vert Foncé / Émeraude) */}
-        <div className="fb-story-card story-emerald">
-          <div className="fb-story-top">
-            <div className="fb-story-icon icon-emerald">
-              <CheckCircle2 size={22} />
+        {/* VALIDATED */}
+        <div className="stat-card stat-green">
+          <div className="stat-top">
+            <div className="stat-icon">
+              <CheckCircle2 size={21} />
             </div>
-            <span className="fb-story-pill pill-emerald">Certifiés</span>
+
+            <span className="stat-trend">
+              Certifiés
+            </span>
           </div>
-          <div className="fb-story-body">
-            <h3 className="fb-story-number">
-              {currentData?.approvedBirths?.toLocaleString("fr-FR") ?? 0}
-            </h3>
-            <p className="fb-story-label">Actes Validés</p>
-            <span className="fb-story-sub">Signés & officiels</span>
+
+          <div className="stat-number">
+            {currentData?.approvedBirths?.toLocaleString("fr-FR") ?? 0}
           </div>
-          <div className="fb-story-bar bar-green"></div>
+
+          <div className="stat-label">
+            Actes validés
+          </div>
+
+          <div className="stat-description">
+            Actes officiellement approuvés
+          </div>
         </div>
 
-        {/* Story 3 : En Attente (Jaune / Or) */}
-        <div className="fb-story-card story-yellow">
-          <div className="fb-story-top">
-            <div className="fb-story-icon icon-yellow">
-              <Clock3 size={22} />
+        {/* PENDING */}
+        <div className="stat-card stat-yellow">
+          <div className="stat-top">
+            <div className="stat-icon">
+              <Clock3 size={21} />
             </div>
-            <span className="fb-story-pill pill-yellow">À signer</span>
+
+            <span className="stat-trend">
+              À traiter
+            </span>
           </div>
-          <div className="fb-story-body">
-            <h3 className="fb-story-number">
-              {currentData?.pendingBirths?.toLocaleString("fr-FR") ?? 0}
-            </h3>
-            <p className="fb-story-label">En attente de validation</p>
-            <span className="fb-story-sub">Vérification requise</span>
+
+          <div className="stat-number">
+            {currentData?.pendingBirths?.toLocaleString("fr-FR") ?? 0}
           </div>
-          <div className="fb-story-bar bar-yellow"></div>
+
+          <div className="stat-label">
+            En attente
+          </div>
+
+          <div className="stat-description">
+            Nécessitent une vérification
+          </div>
         </div>
 
-        {/* Story 4 : Aujourd'hui (Rouge) */}
-        <div className="fb-story-card story-red">
-          <div className="fb-story-top">
-            <div className="fb-story-icon icon-red">
-              <CalendarDays size={22} />
+        {/* TODAY */}
+        <div className="stat-card stat-red">
+          <div className="stat-top">
+            <div className="stat-icon">
+              <CalendarDays size={21} />
             </div>
-            <span className="fb-story-pill pill-red">Aujourd'hui</span>
+
+            <span className="stat-trend">
+              Aujourd'hui
+            </span>
           </div>
-          <div className="fb-story-body">
-            <h3 className="fb-story-number">
-              {currentData?.birthsToday?.toLocaleString("fr-FR") ?? 0}
-            </h3>
-            <p className="fb-story-label">Créées aujourd'hui</p>
-            <span className="fb-story-sub">Flux des dernières 24h</span>
+
+          <div className="stat-number">
+            {currentData?.birthsToday?.toLocaleString("fr-FR") ?? 0}
           </div>
-          <div className="fb-story-bar bar-red"></div>
+
+          <div className="stat-label">
+            Actes aujourd'hui
+          </div>
+
+          <div className="stat-description">
+            Nouvelles déclarations
+          </div>
         </div>
       </div>
 
-      {/* =========================================================
-         3. BOÎTE DE CRÉATION RAPIDE FACEBOOK ("QUOI DE NEUF ?")
-      ========================================================= */}
-      <div className="fb-card fb-create-post-card mb-4">
-        <div className="fb-create-post-top">
-          <div className="fb-avatar">
-            <ShieldCheck size={22} />
-          </div>
-          <button
-            className="fb-create-post-input"
-            onClick={() => navigate("/births/create")}
-          >
-            Enregistrer un nouvel acte de naissance dans le système...
-          </button>
-        </div>
-
-        <div className="fb-create-post-divider"></div>
-
-        <div className="fb-create-post-actions">
-          <button
-            className="fb-post-action-btn action-green"
-            onClick={() => navigate("/births/create")}
-          >
-            <UserPlus size={18} className="text-green" />
-            <span>Nouvelle Déclaration</span>
-          </button>
-
-          <button
-            className="fb-post-action-btn action-yellow"
-            onClick={() => navigate("/births/validate")}
-          >
-            <CheckCircle2 size={18} className="text-yellow" />
-            <span>Valider les Actes</span>
-          </button>
-
-          <button
-            className="fb-post-action-btn action-red"
-            onClick={() => navigate("/births/print")}
-          >
-            <Printer size={18} className="text-red" />
-            <span>Imprimer un Certificat</span>
-          </button>
+      {/* QUICK ACTIONS */}
+      <div className="section-heading">
+        <div>
+          <h2>Actions rapides</h2>
+          <p>Accédez rapidement aux principales fonctionnalités.</p>
         </div>
       </div>
 
-      {/* =========================================================
-         4. FILTRES PILULES FACEBOOK & SÉLECTEUR DE VUE
-      ========================================================= */}
-      <div className="fb-feed-controls mb-4">
-        <div className="fb-filter-pills">
-          <button
-            className={`fb-pill ${activeFilter === "ALL" ? "active" : ""}`}
-            onClick={() => setActiveFilter("ALL")}
-          >
-            Tous les actes ({rawList.length})
-          </button>
+      <div className="quick-actions">
+        <button
+          className="quick-action action-green"
+          onClick={() => navigate("/births/create")}
+        >
+          <div className="quick-action-icon">
+            <UserPlus size={21} />
+          </div>
 
-          <button
-            className={`fb-pill pill-filter-green ${
-              activeFilter === "APPROVED" ? "active" : ""
-            }`}
-            onClick={() => setActiveFilter("APPROVED")}
-          >
-            <span className="fb-pill-dot dot-green"></span>
-            Validés ({rawList.filter((b) => b.status === "APPROVED").length})
-          </button>
+          <div>
+            <strong>Nouvelle déclaration</strong>
+            <span>Enregistrer un acte</span>
+          </div>
 
-          <button
-            className={`fb-pill pill-filter-yellow ${
-              activeFilter === "PENDING" ? "active" : ""
-            }`}
-            onClick={() => setActiveFilter("PENDING")}
-          >
-            <span className="fb-pill-dot dot-yellow"></span>
-            En attente ({rawList.filter((b) => b.status === "PENDING").length})
-          </button>
+          <ChevronRight size={18} />
+        </button>
 
-          <button
-            className={`fb-pill pill-filter-red ${
-              activeFilter === "TODAY" ? "active" : ""
-            }`}
-            onClick={() => setActiveFilter("TODAY")}
-          >
-            <span className="fb-pill-dot dot-red"></span>
-            Aujourd'hui ({currentData?.birthsToday ?? 0})
-          </button>
+        <button
+          className="quick-action action-yellow"
+          onClick={() => navigate("/births/validate")}
+        >
+          <div className="quick-action-icon">
+            <CheckCircle2 size={21} />
+          </div>
+
+          <div>
+            <strong>Valider les actes</strong>
+            <span>{currentData?.pendingBirths ?? 0} acte(s) en attente</span>
+          </div>
+
+          <ChevronRight size={18} />
+        </button>
+
+        <button
+          className="quick-action action-red"
+          onClick={() => navigate("/births/print")}
+        >
+          <div className="quick-action-icon">
+            <Printer size={21} />
+          </div>
+
+          <div>
+            <strong>Imprimer un certificat</strong>
+            <span>Générer un document officiel</span>
+          </div>
+
+          <ChevronRight size={18} />
+        </button>
+      </div>
+
+      {/* ACTS SECTION */}
+      <div className="acts-header">
+        <div>
+          <div className="section-title-row">
+            <h2>Actes récents</h2>
+
+            <span className="records-count">
+              {filteredBirths.length} résultat
+              {filteredBirths.length > 1 ? "s" : ""}
+            </span>
+          </div>
+
+          <p>
+            Consultez les derniers actes enregistrés dans le système.
+          </p>
         </div>
 
-        <div className="fb-view-toggle">
+        <div className="view-switch">
           <button
-            className={`fb-view-btn ${viewMode === "feed" ? "active" : ""}`}
+            className={viewMode === "feed" ? "active" : ""}
             onClick={() => setViewMode("feed")}
-            title="Vue Cartes Fil Facebook"
+            title="Vue cartes"
           >
-            <LayoutGrid size={18} />
+            <LayoutGrid size={17} />
           </button>
+
           <button
-            className={`fb-view-btn ${viewMode === "table" ? "active" : ""}`}
+            className={viewMode === "table" ? "active" : ""}
             onClick={() => setViewMode("table")}
-            title="Vue Tableau Officiel"
+            title="Vue tableau"
           >
             <List size={18} />
           </button>
         </div>
       </div>
 
-      {/* =========================================================
-         5. CONTENU : CARTES FACEBOOK OU TABLEAU OFFICIEL
-      ========================================================= */}
-      {filteredBirths.length === 0 ? (
-        <div className="fb-card fb-empty-state">
-          <div className="fb-empty-icon">
-            <Baby size={40} />
-          </div>
-          <h4>Aucun acte trouvé</h4>
-          <p>Aucun enregistrement ne correspond au filtre sélectionné.</p>
+      {/* FILTERS */}
+      <div className="filter-container">
+        <div className="filter-list">
           <button
-            className="fb-btn fb-btn-green mt-3"
+            className={`filter-button ${
+              activeFilter === "ALL" ? "active" : ""
+            }`}
+            onClick={() => setActiveFilter("ALL")}
+          >
+            Tous
+            <span>{rawList.length}</span>
+          </button>
+
+          <button
+            className={`filter-button filter-green ${
+              activeFilter === "APPROVED" ? "active" : ""
+            }`}
+            onClick={() => setActiveFilter("APPROVED")}
+          >
+            <i></i>
+            Validés
+            <span>{approvedCount}</span>
+          </button>
+
+          <button
+            className={`filter-button filter-yellow ${
+              activeFilter === "PENDING" ? "active" : ""
+            }`}
+            onClick={() => setActiveFilter("PENDING")}
+          >
+            <i></i>
+            En attente
+            <span>{pendingCount}</span>
+          </button>
+
+          <button
+            className={`filter-button filter-red ${
+              activeFilter === "TODAY" ? "active" : ""
+            }`}
+            onClick={() => setActiveFilter("TODAY")}
+          >
+            <i></i>
+            Aujourd'hui
+            <span>{currentData?.birthsToday ?? 0}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* EMPTY */}
+      {filteredBirths.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-icon">
+            <Search size={27} />
+          </div>
+
+          <h3>Aucun acte trouvé</h3>
+
+          <p>
+            Aucun enregistrement ne correspond au filtre sélectionné.
+          </p>
+
+          <button
+            className="reset-button"
             onClick={() => setActiveFilter("ALL")}
           >
             Réinitialiser les filtres
           </button>
         </div>
       ) : viewMode === "feed" ? (
-        /* VUE FIL DE CARTES FACEBOOK */
-        <div className="fb-posts-stream">
+        /* FEED */
+        <div className="birth-feed">
           {filteredBirths.map((birth) => {
             const isApproved = birth.status === "APPROVED";
-            const parents = Array.isArray(birth.parents) ? birth.parents[0] : null;
+
+            const parents = Array.isArray(birth.parents)
+              ? birth.parents[0]
+              : null;
 
             return (
-              <div className="fb-card fb-post-card mb-4" key={birth.id || birth.actNumber}>
-                {/* En-tête du post Facebook */}
-                <div className="fb-post-header">
-                  <div className="fb-post-avatar-wrap">
-                    <div className={`fb-post-avatar ${isApproved ? "avatar-green" : "avatar-yellow"}`}>
-                      <Baby size={22} />
-                    </div>
+              <article
+                className="birth-card"
+                key={birth.id || birth.actNumber}
+              >
+                {/* CARD HEADER */}
+                <div className="birth-card-header">
+                  <div className="child-avatar">
+                    {getInitials(
+                      birth.childFirstname,
+                      birth.childLastname
+                    )}
                   </div>
 
-                  <div className="fb-post-meta">
-                    <div className="fb-post-author-row">
-                      <span className="fb-post-author">
+                  <div className="child-info">
+                    <div className="child-name-line">
+                      <h3>
                         {birth.childFirstname} {birth.childLastname}
-                      </span>
-                      <span className="fb-post-sex-tag">
+                      </h3>
+
+                      <span className="sex-badge">
                         {birth.sex === "MALE" || birth.sex === "M"
                           ? "♂ Garçon"
                           : "♀ Fille"}
                       </span>
                     </div>
 
-                    <div className="fb-post-timestamp">
-                      <MapPin size={12} className="text-muted" />
-                      <span>{birth.birthPlace || "Centre Hospitalier"}</span>
-                      <span className="fb-dot-sep">•</span>
+                    <div className="birth-location">
+                      <MapPin size={13} />
+
+                      <span>
+                        {birth.birthPlace || "Centre Hospitalier"}
+                      </span>
+
+                      <span>•</span>
+
                       <span>
                         {birth.createdAt
-                          ? new Date(birth.createdAt).toLocaleDateString("fr-FR", {
+                          ? new Date(
+                              birth.createdAt
+                            ).toLocaleDateString("fr-FR", {
                               day: "numeric",
                               month: "short",
                               year: "numeric",
@@ -501,200 +619,307 @@ const Dashboard = () => {
                     </div>
                   </div>
 
-                  {/* Badge de Statut Facebook (Vert, Rouge, Jaune) */}
-                  <div className="fb-post-status">
-                    {isApproved ? (
-                      <span className="fb-badge fb-badge-green">
-                        <CheckCircle2 size={13} />
-                        Validé
-                      </span>
-                    ) : (
-                      <span className="fb-badge fb-badge-yellow">
-                        <Clock3 size={13} />
-                        En attente
-                      </span>
-                    )}
+                  <div className="card-menu">
+                    <button>
+                      <MoreHorizontal size={18} />
+                    </button>
                   </div>
                 </div>
 
-                {/* Corps du post / Fiche d'acte */}
-                <div className="fb-post-content">
-                  <div className="fb-act-highlight">
-                    <div className="fb-act-badge">
-                      <FileText size={15} className="text-green" />
-                      <span className="fb-act-num">
-                        Acte N° {birth.actNumber || `SIVEC-2026-${birth.id}`}
-                      </span>
+                {/* ACT INFO */}
+                <div className="act-information">
+                  <div className="act-number">
+                    <div className="act-icon">
+                      <FileText size={17} />
                     </div>
-                    <span className="fb-act-center">
+
+                    <div>
+                      <small>NUMÉRO D'ACTE</small>
+
+                      <strong>
+                        {birth.actNumber ||
+                          `SIVEC-2026-${birth.id}`}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div className="center-information">
+                    <small>CENTRE</small>
+
+                    <strong>
                       {birth.centerId || "Mairie de Yaoundé I"}
-                    </span>
+                    </strong>
                   </div>
 
-                  {/* Détails Parents & Filiation */}
-                  <div className="fb-filiation-box">
-                    <div className="fb-filiation-row">
-                      <div className="fb-parent-item">
-                        <UserRound size={15} className="text-green" />
-                        <div>
-                          <span className="fb-parent-role">Père :</span>
-                          <strong className="fb-parent-name">
-                            {parents?.fatherName || "Non renseigné"}
-                          </strong>
-                          {parents?.fatherJob && (
-                            <span className="fb-parent-job">({parents.fatherJob})</span>
-                          )}
-                        </div>
+                  <span
+                    className={`status-badge ${
+                      isApproved ? "approved" : "pending"
+                    }`}
+                  >
+                    {isApproved ? (
+                      <>
+                        <CheckCircle2 size={14} />
+                        Validé
+                      </>
+                    ) : (
+                      <>
+                        <Clock3 size={14} />
+                        En attente
+                      </>
+                    )}
+                  </span>
+                </div>
+
+                {/* PARENTS */}
+                <div className="parents-section">
+                  <div className="parents-title">
+                    <span>Filiation</span>
+                    <span>Parents déclarés</span>
+                  </div>
+
+                  <div className="parents-grid">
+                    <div className="parent-card">
+                      <div className="parent-icon father">
+                        <UserRound size={17} />
                       </div>
 
-                      <div className="fb-parent-item">
-                        <UserRound size={15} className="text-yellow" />
-                        <div>
-                          <span className="fb-parent-role">Mère :</span>
-                          <strong className="fb-parent-name">
-                            {parents?.motherName || "Non renseigné"}
-                          </strong>
-                          {parents?.motherJob && (
-                            <span className="fb-parent-job">({parents.motherJob})</span>
-                          )}
-                        </div>
+                      <div>
+                        <small>PÈRE</small>
+
+                        <strong>
+                          {parents?.fatherName || "Non renseigné"}
+                        </strong>
+
+                        {parents?.fatherJob && (
+                          <span>{parents.fatherJob}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="parent-card">
+                      <div className="parent-icon mother">
+                        <UserRound size={17} />
+                      </div>
+
+                      <div>
+                        <small>MÈRE</small>
+
+                        <strong>
+                          {parents?.motherName || "Non renseigné"}
+                        </strong>
+
+                        {parents?.motherJob && (
+                          <span>{parents.motherJob}</span>
+                        )}
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Ligne de séparation */}
-                <div className="fb-post-divider"></div>
-
-                {/* Barre d'actions Facebook (Vert, Rouge, Jaune) */}
-                <div className="fb-post-actions-bar">
+                {/* ACTIONS */}
+                <div className="birth-actions">
                   {!isApproved ? (
                     <button
-                      className="fb-post-btn btn-validate"
-                      onClick={() => handleValidateQuick(birth.id)}
+                      className="action-button validate"
+                      onClick={() =>
+                        handleValidateQuick(birth.id)
+                      }
                       disabled={validatingId === birth.id}
                     >
                       <CheckCircle2
-                        size={17}
-                        className={validatingId === birth.id ? "spin text-green" : "text-green"}
+                        size={16}
+                        className={
+                          validatingId === birth.id
+                            ? "rotate-icon"
+                            : ""
+                        }
                       />
-                      <span>{validatingId === birth.id ? "Validation..." : "Valider l'acte"}</span>
+
+                      {validatingId === birth.id
+                        ? "Validation..."
+                        : "Valider"}
                     </button>
                   ) : (
-                    <div className="fb-post-btn-validated">
-                      <Check size={16} className="text-green" />
-                      <span>Acte Certifié Conforme</span>
+                    <div className="certified-label">
+                      <Check size={16} />
+                      Acte certifié conforme
                     </div>
                   )}
 
                   <button
-                    className="fb-post-btn"
+                    className="action-button"
                     onClick={() => navigate(`/tout`)}
-                    title="Consulter les détails complets"
                   >
-                    <Eye size={17} className="text-muted" />
-                    <span>Détails</span>
+                    <Eye size={16} />
+                    Détails
                   </button>
 
                   <button
-                    className="fb-post-btn"
-                    onClick={() => navigate(`/births/${birth.id || 1}/print`)}
-                    title="Imprimer l'acte officiel"
+                    className="action-button"
+                    onClick={() =>
+                      navigate(
+                        `/births/${birth.id || 1}/print`
+                      )
+                    }
                   >
-                    <Printer size={17} className="text-red" />
-                    <span>Imprimer</span>
+                    <Printer size={16} />
+                    Imprimer
                   </button>
 
                   <button
-                    className="fb-post-btn"
-                    onClick={() => navigate(`/births/${birth.id || 1}/attachments`)}
-                    title="Ajouter ou voir des pièces jointes"
+                    className="action-button"
+                    onClick={() =>
+                      navigate(
+                        `/births/${birth.id || 1}/attachments`
+                      )
+                    }
                   >
-                    <Paperclip size={17} className="text-yellow" />
-                    <span>Pièces</span>
+                    <Paperclip size={16} />
+                    Pièces
                   </button>
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>
       ) : (
-        /* VUE TABLEAU OFFICIEL */
-        <div className="fb-card p-3 mb-4">
+        /* TABLE */
+        <div className="table-card">
           <div className="table-responsive">
-            <table className="table fb-table align-middle">
+            <table className="sivec-table">
               <thead>
                 <tr>
-                  <th>N° D'ACTE</th>
+                  <th>ACTE</th>
                   <th>ENFANT</th>
                   <th>DATE & LIEU</th>
                   <th>STATUT</th>
                   <th>PARENTS</th>
-                  <th className="text-end">ACTIONS</th>
+                  <th>ACTIONS</th>
                 </tr>
               </thead>
+
               <tbody>
                 {filteredBirths.map((birth) => {
-                  const isApproved = birth.status === "APPROVED";
-                  const parents = Array.isArray(birth.parents) ? birth.parents[0] : null;
+                  const isApproved =
+                    birth.status === "APPROVED";
+
+                  const parents = Array.isArray(birth.parents)
+                    ? birth.parents[0]
+                    : null;
 
                   return (
-                    <tr key={birth.id || birth.actNumber}>
+                    <tr
+                      key={birth.id || birth.actNumber}
+                    >
                       <td>
-                        <strong className="text-green">
-                          {birth.actNumber || `ACT-${birth.id}`}
+                        <strong className="table-act-number">
+                          {birth.actNumber ||
+                            `ACT-${birth.id}`}
                         </strong>
                       </td>
+
                       <td>
-                        <div className="d-flex align-items-center gap-2">
-                          <div className="fb-table-avatar">
-                            <Baby size={16} />
+                        <div className="table-child">
+                          <div className="table-avatar">
+                            {getInitials(
+                              birth.childFirstname,
+                              birth.childLastname
+                            )}
                           </div>
+
                           <div>
                             <strong>
-                              {birth.childFirstname} {birth.childLastname}
+                              {birth.childFirstname}{" "}
+                              {birth.childLastname}
                             </strong>
-                            <div className="small text-muted">
-                              {birth.sex === "MALE" || birth.sex === "M"
+
+                            <small>
+                              {birth.sex === "MALE" ||
+                              birth.sex === "M"
                                 ? "Masculin"
                                 : "Féminin"}
-                            </div>
+                            </small>
                           </div>
                         </div>
                       </td>
+
                       <td>
-                        <div>
+                        <strong>
                           {birth.createdAt
-                            ? new Date(birth.createdAt).toLocaleDateString("fr-FR")
+                            ? new Date(
+                                birth.createdAt
+                              ).toLocaleDateString(
+                                "fr-FR"
+                              )
                             : "—"}
+                        </strong>
+
+                        <small>
+                          {birth.birthPlace || "—"}
+                        </small>
+                      </td>
+
+                      <td>
+                        <span
+                          className={`status-badge ${
+                            isApproved
+                              ? "approved"
+                              : "pending"
+                          }`}
+                        >
+                          {isApproved ? (
+                            <>
+                              <CheckCircle2 size={13} />
+                              Validé
+                            </>
+                          ) : (
+                            <>
+                              <Clock3 size={13} />
+                              En attente
+                            </>
+                          )}
+                        </span>
+                      </td>
+
+                      <td>
+                        <div className="table-parents">
+                          <span>
+                            P :{" "}
+                            {parents?.fatherName || "—"}
+                          </span>
+
+                          <span>
+                            M :{" "}
+                            {parents?.motherName || "—"}
+                          </span>
                         </div>
-                        <small className="text-muted">{birth.birthPlace}</small>
                       </td>
+
                       <td>
-                        {isApproved ? (
-                          <span className="fb-badge fb-badge-green">Validé</span>
-                        ) : (
-                          <span className="fb-badge fb-badge-yellow">En attente</span>
-                        )}
-                      </td>
-                      <td>
-                        <small className="d-block">P: {parents?.fatherName || "—"}</small>
-                        <small className="d-block text-muted">M: {parents?.motherName || "—"}</small>
-                      </td>
-                      <td className="text-end">
-                        <div className="d-inline-flex gap-2">
+                        <div className="table-actions">
                           {!isApproved && (
                             <button
-                              className="fb-btn fb-btn-light-green p-1 px-2"
-                              onClick={() => handleValidateQuick(birth.id)}
+                              className="table-action validate"
+                              onClick={() =>
+                                handleValidateQuick(
+                                  birth.id
+                                )
+                              }
                               title="Valider"
                             >
                               <CheckCircle2 size={15} />
                             </button>
                           )}
+
                           <button
-                            className="fb-btn fb-btn-secondary p-1 px-2"
-                            onClick={() => navigate(`/births/${birth.id || 1}/print`)}
+                            className="table-action"
+                            onClick={() =>
+                              navigate(
+                                `/births/${
+                                  birth.id || 1
+                                }/print`
+                              )
+                            }
                             title="Imprimer"
                           >
                             <Printer size={15} />
@@ -710,515 +935,1153 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* =========================================================
-         STYLE DU DASHBOARD (SCOPED / CLEAN)
-      ========================================================= */}
+      {/* CSS */}
       <style>{`
-        .fb-dashboard-feed {
-          max-width: 1000px;
+        :root {
+          --sivec-primary: #00843d;
+          --sivec-primary-dark: #006b31;
+          --sivec-primary-light: #e9f7ef;
+
+          --sivec-yellow: #f6c800;
+          --sivec-yellow-light: #fff8d9;
+
+          --sivec-red: #ce1126;
+          --sivec-red-light: #fff0f2;
+
+          --sivec-blue: #2563eb;
+          --sivec-blue-light: #eff6ff;
+
+          --dashboard-bg: #f5f7f9;
+          --card-bg: #ffffff;
+
+          --text-main: #17221b;
+          --text-secondary: #647067;
+          --text-muted: #8a948d;
+
+          --border: #e5e9e6;
+          --shadow: 0 4px 18px rgba(20, 40, 28, 0.06);
+        }
+
+        * {
+          box-sizing: border-box;
+        }
+
+        .sivec-dashboard {
+          width: 100%;
+          max-width: 1250px;
           margin: 0 auto;
+          padding: 26px;
+          color: var(--text-main);
         }
 
-        /* Welcome Banner */
-        .fb-welcome-card {
+        /* HEADER */
+
+        .dashboard-header {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 20px;
+          margin-bottom: 24px;
+        }
+
+        .dashboard-breadcrumb {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          color: var(--text-muted);
+          margin-bottom: 7px;
+        }
+
+        .dashboard-breadcrumb strong {
+          color: var(--sivec-primary);
+        }
+
+        .dashboard-title {
+          margin: 0;
+          font-size: 28px;
+          font-weight: 800;
+          letter-spacing: -0.6px;
+        }
+
+        .dashboard-subtitle {
+          margin: 5px 0 0;
+          font-size: 13.5px;
+          color: var(--text-secondary);
+        }
+
+        .refresh-button {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 15px;
+          border: 1px solid var(--border);
+          background: white;
+          border-radius: 9px;
+          color: var(--text-main);
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: .2s;
+          box-shadow: 0 2px 7px rgba(0,0,0,.03);
+        }
+
+        .refresh-button:hover {
+          border-color: var(--sivec-primary);
+          color: var(--sivec-primary);
+        }
+
+        .refresh-button:disabled {
+          opacity: .65;
+          cursor: not-allowed;
+        }
+
+        .rotate-icon {
+          animation: rotate 1s linear infinite;
+        }
+
+        @keyframes rotate {
+          from {
+            transform: rotate(0deg);
+          }
+
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        /* WELCOME */
+
+        .welcome-panel {
+          position: relative;
           overflow: hidden;
-          background: #ffffff;
-        }
-
-        .fb-welcome-content {
-          padding: 20px 24px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 16px;
-          flex-wrap: wrap;
+          gap: 20px;
+          padding: 23px 25px;
+          margin-bottom: 24px;
+          border-radius: 14px;
+          background:
+            linear-gradient(
+              110deg,
+              #006b31 0%,
+              #00843d 55%,
+              #009b48 100%
+            );
+          color: white;
+          box-shadow: 0 8px 25px rgba(0, 132, 61, .15);
         }
 
-        .fb-welcome-left {
+        .welcome-content {
+          position: relative;
+          z-index: 2;
           display: flex;
           align-items: center;
-          gap: 16px;
+          gap: 17px;
         }
 
-        .fb-welcome-icon-box {
-          width: 50px;
-          height: 50px;
-          border-radius: 12px;
-          background: var(--sivec-green-light);
+        .welcome-icon {
+          width: 52px;
+          height: 52px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 13px;
+          background: rgba(255,255,255,.15);
+          border: 1px solid rgba(255,255,255,.2);
+        }
+
+        .welcome-label {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: .7px;
+          opacity: .85;
+        }
+
+        .welcome-panel h2 {
+          margin: 4px 0 4px;
+          font-size: 19px;
+          font-weight: 750;
+        }
+
+        .welcome-panel p {
+          margin: 0;
+          font-size: 12.5px;
+          opacity: .82;
+        }
+
+        .welcome-status {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          padding: 8px 12px;
+          border-radius: 20px;
+          background: rgba(255,255,255,.11);
+          border: 1px solid rgba(255,255,255,.14);
+          font-size: 11.5px;
+          font-weight: 600;
+          white-space: nowrap;
+        }
+
+        .status-dot {
+          width: 7px;
+          height: 7px;
+          background: #7dffad;
+          border-radius: 50%;
+          box-shadow: 0 0 0 4px rgba(125,255,173,.12);
+        }
+
+        .welcome-decoration {
+          position: absolute;
+          border-radius: 50%;
+          border: 1px solid rgba(255,255,255,.07);
+        }
+
+        .decoration-one {
+          width: 180px;
+          height: 180px;
+          right: 90px;
+          top: -100px;
+        }
+
+        .decoration-two {
+          width: 250px;
+          height: 250px;
+          right: -80px;
+          bottom: -170px;
+        }
+
+        /* STATISTICS */
+
+        .statistics-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 15px;
+          margin-bottom: 28px;
+        }
+
+        .stat-card {
+          position: relative;
+          overflow: hidden;
+          padding: 18px;
+          min-height: 165px;
+          background: white;
+          border: 1px solid var(--border);
+          border-radius: 13px;
+          box-shadow: var(--shadow);
+          transition: .2s;
+        }
+
+        .stat-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(20,40,28,.08);
+        }
+
+        .stat-card::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          bottom: 0;
+          width: 100%;
+          height: 3px;
+        }
+
+        .stat-blue::after {
+          background: var(--sivec-blue);
+        }
+
+        .stat-green::after {
+          background: var(--sivec-primary);
+        }
+
+        .stat-yellow::after {
+          background: var(--sivec-yellow);
+        }
+
+        .stat-red::after {
+          background: var(--sivec-red);
+        }
+
+        .stat-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .stat-icon {
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 10px;
+        }
+
+        .stat-blue .stat-icon {
+          background: var(--sivec-blue-light);
+          color: var(--sivec-blue);
+        }
+
+        .stat-green .stat-icon {
+          background: var(--sivec-primary-light);
+          color: var(--sivec-primary);
+        }
+
+        .stat-yellow .stat-icon {
+          background: var(--sivec-yellow-light);
+          color: #a37e00;
+        }
+
+        .stat-red .stat-icon {
+          background: var(--sivec-red-light);
+          color: var(--sivec-red);
+        }
+
+        .stat-trend {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 7px;
+          border-radius: 20px;
+          background: #f6f8f7;
+          color: var(--text-secondary);
+          font-size: 10.5px;
+          font-weight: 650;
+        }
+
+        .stat-number {
+          margin-top: 17px;
+          font-size: 27px;
+          line-height: 1;
+          font-weight: 800;
+          letter-spacing: -.6px;
+        }
+
+        .stat-label {
+          margin-top: 7px;
+          font-size: 13px;
+          font-weight: 700;
+        }
+
+        .stat-description {
+          margin-top: 4px;
+          color: var(--text-muted);
+          font-size: 11px;
+        }
+
+        /* SECTION */
+
+        .section-heading {
+          margin-bottom: 12px;
+        }
+
+        .section-heading h2,
+        .acts-header h2 {
+          margin: 0;
+          font-size: 18px;
+          font-weight: 800;
+        }
+
+        .section-heading p,
+        .acts-header p {
+          margin: 4px 0 0;
+          color: var(--text-secondary);
+          font-size: 12.5px;
+        }
+
+        /* QUICK ACTIONS */
+
+        .quick-actions {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 13px;
+          margin-bottom: 30px;
+        }
+
+        .quick-action {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px;
+          border: 1px solid var(--border);
+          border-radius: 11px;
+          background: white;
+          text-align: left;
+          cursor: pointer;
+          transition: .2s;
+        }
+
+        .quick-action:hover {
+          transform: translateY(-2px);
+          box-shadow: var(--shadow);
+        }
+
+        .quick-action > svg {
+          margin-left: auto;
+          color: var(--text-muted);
+        }
+
+        .quick-action-icon {
+          width: 42px;
+          height: 42px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 10px;
+          flex-shrink: 0;
+        }
+
+        .action-green .quick-action-icon {
+          background: var(--sivec-primary-light);
+          color: var(--sivec-primary);
+        }
+
+        .action-yellow .quick-action-icon {
+          background: var(--sivec-yellow-light);
+          color: #9b7800;
+        }
+
+        .action-red .quick-action-icon {
+          background: var(--sivec-red-light);
+          color: var(--sivec-red);
+        }
+
+        .quick-action strong {
+          display: block;
+          font-size: 13px;
+          font-weight: 750;
+        }
+
+        .quick-action span {
+          display: block;
+          margin-top: 3px;
+          font-size: 11px;
+          color: var(--text-secondary);
+        }
+
+        /* ACTS HEADER */
+
+        .acts-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 15px;
+          margin-bottom: 12px;
+        }
+
+        .section-title-row {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+        }
+
+        .records-count {
+          padding: 3px 8px;
+          border-radius: 20px;
+          background: var(--sivec-primary-light);
+          color: var(--sivec-primary);
+          font-size: 10px;
+          font-weight: 700;
+        }
+
+        .view-switch {
+          display: flex;
+          padding: 3px;
+          border: 1px solid var(--border);
+          border-radius: 9px;
+          background: white;
+        }
+
+        .view-switch button {
+          width: 34px;
+          height: 30px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: none;
+          border-radius: 6px;
+          background: transparent;
+          color: var(--text-muted);
+          cursor: pointer;
+        }
+
+        .view-switch button.active {
+          background: var(--sivec-primary);
+          color: white;
+        }
+
+        /* FILTER */
+
+        .filter-container {
+          margin-bottom: 15px;
+        }
+
+        .filter-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 7px;
+        }
+
+        .filter-button {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          padding: 7px 11px;
+          border: 1px solid var(--border);
+          border-radius: 7px;
+          background: white;
+          color: var(--text-secondary);
+          font-size: 11.5px;
+          font-weight: 650;
+          cursor: pointer;
+          transition: .18s;
+        }
+
+        .filter-button span {
+          min-width: 19px;
+          padding: 2px 5px;
+          text-align: center;
+          border-radius: 10px;
+          background: #f0f2f1;
+          font-size: 10px;
+        }
+
+        .filter-button:hover {
+          border-color: #c8d1cb;
+          background: #fafcfb;
+        }
+
+        .filter-button.active {
+          background: var(--text-main);
+          color: white;
+          border-color: var(--text-main);
+        }
+
+        .filter-button.active span {
+          background: rgba(255,255,255,.18);
+          color: white;
+        }
+
+        .filter-button i {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: currentColor;
+        }
+
+        .filter-green.active {
+          background: var(--sivec-primary);
+          border-color: var(--sivec-primary);
+        }
+
+        .filter-yellow.active {
+          background: #b38b00;
+          border-color: #b38b00;
+        }
+
+        .filter-red.active {
+          background: var(--sivec-red);
+          border-color: var(--sivec-red);
+        }
+
+        /* BIRTH CARD */
+
+        .birth-feed {
+          display: flex;
+          flex-direction: column;
+          gap: 13px;
+        }
+
+        .birth-card {
+          overflow: hidden;
+          background: white;
+          border: 1px solid var(--border);
+          border-radius: 13px;
+          box-shadow: var(--shadow);
+        }
+
+        .birth-card-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 17px 18px;
+        }
+
+        .child-avatar {
+          width: 46px;
+          height: 46px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-        }
-
-        .fb-welcome-title {
-          margin: 0;
-          font-size: 22px;
-          font-weight: 800;
-          color: var(--fb-text-primary);
-        }
-
-        .fb-welcome-desc {
-          margin: 2px 0 0 0;
-          font-size: 13.5px;
-          color: var(--fb-text-secondary);
-        }
-
-        /* Stories Grid */
-        .fb-stories-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-          gap: 14px;
-        }
-
-        .fb-story-card {
-          background: #ffffff;
           border-radius: 12px;
-          border: 1px solid var(--fb-border);
-          padding: 16px;
-          position: relative;
-          overflow: hidden;
-          box-shadow: var(--fb-shadow-sm);
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-        }
-
-        .fb-story-card:hover {
-          transform: translateY(-2px);
-          box-shadow: var(--fb-shadow);
-        }
-
-        .fb-story-top {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 12px;
-        }
-
-        .fb-story-icon {
-          width: 42px;
-          height: 42px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .icon-green { background: var(--sivec-green-light); color: var(--sivec-green); }
-        .icon-emerald { background: #d1fae5; color: #059669; }
-        .icon-yellow { background: var(--sivec-yellow-light); color: var(--sivec-yellow-hover); }
-        .icon-red { background: var(--sivec-red-light); color: var(--sivec-red); }
-
-        .fb-story-pill {
-          font-size: 11px;
-          font-weight: 700;
-          padding: 3px 8px;
-          border-radius: 10px;
-        }
-
-        .pill-green { background: var(--sivec-green-light); color: var(--sivec-green); }
-        .pill-emerald { background: #d1fae5; color: #059669; }
-        .pill-yellow { background: var(--sivec-yellow-light); color: var(--sivec-yellow-hover); }
-        .pill-red { background: var(--sivec-red-light); color: var(--sivec-red); }
-
-        .fb-story-number {
-          margin: 0;
-          font-size: 26px;
-          font-weight: 800;
-          color: var(--fb-text-primary);
-          line-height: 1.2;
-        }
-
-        .fb-story-label {
-          margin: 4px 0 2px 0;
-          font-size: 13px;
-          font-weight: 700;
-          color: var(--fb-text-primary);
-        }
-
-        .fb-story-sub {
-          font-size: 11.5px;
-          color: var(--fb-text-secondary);
-        }
-
-        .fb-story-bar {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          height: 3px;
-        }
-
-        .bar-green { background: var(--sivec-green); }
-        .bar-yellow { background: var(--sivec-yellow); }
-        .bar-red { background: var(--sivec-red); }
-
-        /* Create Post Box */
-        .fb-create-post-card {
-          padding: 14px 16px;
-          background: #ffffff;
-        }
-
-        .fb-create-post-top {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-
-        .fb-create-post-input {
-          flex: 1;
-          background: var(--fb-hover);
-          border: 1px solid var(--fb-border);
-          border-radius: 24px;
-          padding: 10px 18px;
-          text-align: left;
-          color: var(--fb-text-secondary);
+          background: var(--sivec-primary-light);
+          color: var(--sivec-primary);
           font-size: 14px;
-          cursor: pointer;
-          transition: background 0.15s ease;
+          font-weight: 800;
         }
 
-        .fb-create-post-input:hover {
-          background: #e4e6eb;
-          color: var(--fb-text-primary);
-        }
-
-        .fb-create-post-divider {
-          height: 1px;
-          background: var(--fb-border);
-          margin: 12px 0;
-        }
-
-        .fb-create-post-actions {
-          display: flex;
-          align-items: center;
-          justify-content: space-around;
-          gap: 8px;
-        }
-
-        .fb-post-action-btn {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          padding: 8px 12px;
-          border-radius: 8px;
-          border: none;
-          background: transparent;
-          font-size: 13.5px;
-          font-weight: 600;
-          color: var(--fb-text-secondary);
-          cursor: pointer;
-          transition: background 0.15s ease;
-        }
-
-        .fb-post-action-btn:hover {
-          background: var(--fb-hover);
-          color: var(--fb-text-primary);
-        }
-
-        /* Filter Pills & View Switch */
-        .fb-feed-controls {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          flex-wrap: wrap;
-        }
-
-        .fb-filter-pills {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex-wrap: wrap;
-        }
-
-        .fb-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 7px 14px;
-          border-radius: 20px;
-          border: 1px solid var(--fb-border);
-          background: #ffffff;
-          font-size: 13px;
-          font-weight: 600;
-          color: var(--fb-text-secondary);
-          cursor: pointer;
-          transition: all 0.18s ease;
-        }
-
-        .fb-pill:hover {
-          background: var(--fb-hover);
-          color: var(--fb-text-primary);
-        }
-
-        .fb-pill.active {
-          background: var(--fb-text-primary);
-          color: #ffffff;
-          border-color: var(--fb-text-primary);
-        }
-
-        .fb-pill.pill-filter-green.active {
-          background: var(--sivec-green);
-          border-color: var(--sivec-green);
-          color: #ffffff;
-        }
-
-        .fb-pill.pill-filter-yellow.active {
-          background: var(--sivec-yellow-hover);
-          border-color: var(--sivec-yellow-hover);
-          color: #ffffff;
-        }
-
-        .fb-pill.pill-filter-red.active {
-          background: var(--sivec-red);
-          border-color: var(--sivec-red);
-          color: #ffffff;
-        }
-
-        .fb-pill-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-        }
-
-        .dot-green { background: var(--sivec-green); }
-        .dot-yellow { background: var(--sivec-yellow); }
-        .dot-red { background: var(--sivec-red); }
-
-        .fb-view-toggle {
-          display: flex;
-          background: #ffffff;
-          border: 1px solid var(--fb-border);
-          border-radius: 8px;
-          overflow: hidden;
-        }
-
-        .fb-view-btn {
-          border: none;
-          background: transparent;
-          padding: 7px 12px;
-          color: var(--fb-text-secondary);
-          cursor: pointer;
-          transition: all 0.15s ease;
-        }
-
-        .fb-view-btn.active {
-          background: var(--sivec-green);
-          color: #ffffff;
-        }
-
-        /* Post Card */
-        .fb-post-card {
-          padding: 16px;
-          background: #ffffff;
-        }
-
-        .fb-post-header {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin-bottom: 14px;
-        }
-
-        .fb-post-avatar {
-          width: 44px;
-          height: 44px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .avatar-green { background: var(--sivec-green-light); color: var(--sivec-green); }
-        .avatar-yellow { background: var(--sivec-yellow-light); color: var(--sivec-yellow-hover); }
-
-        .fb-post-meta {
+        .child-info {
+          min-width: 0;
           flex: 1;
         }
 
-        .fb-post-author-row {
+        .child-name-line {
           display: flex;
           align-items: center;
-          gap: 8px;
+          flex-wrap: wrap;
+          gap: 7px;
         }
 
-        .fb-post-author {
+        .child-name-line h3 {
+          margin: 0;
           font-size: 15px;
+          font-weight: 750;
+        }
+
+        .sex-badge {
+          padding: 3px 7px;
+          border-radius: 5px;
+          background: #f0f3f1;
+          color: var(--text-secondary);
+          font-size: 9.5px;
           font-weight: 700;
-          color: var(--fb-text-primary);
         }
 
-        .fb-post-sex-tag {
-          font-size: 11px;
-          font-weight: 600;
-          padding: 2px 7px;
-          border-radius: 10px;
-          background: #e4e6eb;
-          color: var(--fb-text-secondary);
-        }
-
-        .fb-post-timestamp {
+        .birth-location {
           display: flex;
           align-items: center;
           gap: 5px;
-          font-size: 12px;
-          color: var(--fb-text-secondary);
-          margin-top: 2px;
+          margin-top: 4px;
+          color: var(--text-muted);
+          font-size: 11px;
         }
 
-        .fb-dot-sep {
-          color: var(--fb-text-muted);
-        }
-
-        .fb-act-highlight {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          background: var(--fb-hover);
-          padding: 8px 12px;
-          border-radius: 8px;
-          margin-bottom: 12px;
-        }
-
-        .fb-act-badge {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .fb-act-num {
-          font-weight: 700;
-          font-size: 13px;
-          color: var(--fb-text-primary);
-        }
-
-        .fb-act-center {
-          font-size: 12px;
-          color: var(--fb-text-secondary);
-        }
-
-        .fb-filiation-box {
-          background: #fcfdfe;
-          border: 1px dashed var(--fb-border);
-          border-radius: 8px;
-          padding: 10px 14px;
-        }
-
-        .fb-filiation-row {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 12px;
-        }
-
-        .fb-parent-item {
-          display: flex;
-          align-items: flex-start;
-          gap: 8px;
-          font-size: 13px;
-        }
-
-        .fb-parent-role {
-          color: var(--fb-text-secondary);
-          margin-right: 4px;
-        }
-
-        .fb-parent-name {
-          color: var(--fb-text-primary);
-        }
-
-        .fb-parent-job {
-          margin-left: 4px;
-          font-size: 11.5px;
-          color: var(--fb-text-muted);
-        }
-
-        .fb-post-divider {
-          height: 1px;
-          background: var(--fb-border);
-          margin: 12px 0 8px 0;
-        }
-
-        .fb-post-actions-bar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 6px;
-        }
-
-        .fb-post-btn {
-          flex: 1;
+        .card-menu button {
+          width: 32px;
+          height: 32px;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 6px;
-          padding: 8px;
-          border-radius: 6px;
           border: none;
+          border-radius: 7px;
           background: transparent;
-          font-size: 13px;
-          font-weight: 600;
-          color: var(--fb-text-secondary);
+          color: var(--text-muted);
           cursor: pointer;
-          transition: background 0.15s ease;
         }
 
-        .fb-post-btn:hover {
-          background: var(--fb-hover);
-          color: var(--fb-text-primary);
+        .card-menu button:hover {
+          background: #f3f5f4;
         }
 
-        .fb-post-btn.btn-validate {
-          background: var(--sivec-green-light);
-          color: var(--sivec-green);
-        }
+        /* ACT INFORMATION */
 
-        .fb-post-btn.btn-validate:hover {
-          background: #c8e6c9;
-        }
-
-        .fb-post-btn-validated {
-          flex: 1;
+        .act-information {
           display: flex;
+          align-items: center;
+          gap: 15px;
+          margin: 0 18px;
+          padding: 12px;
+          border: 1px solid var(--border);
+          border-radius: 9px;
+          background: #fafcfb;
+        }
+
+        .act-number {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          flex: 1;
+        }
+
+        .act-icon {
+          width: 35px;
+          height: 35px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 8px;
+          background: var(--sivec-primary-light);
+          color: var(--sivec-primary);
+        }
+
+        .act-number small,
+        .center-information small {
+          display: block;
+          margin-bottom: 2px;
+          color: var(--text-muted);
+          font-size: 8.5px;
+          font-weight: 750;
+          letter-spacing: .5px;
+        }
+
+        .act-number strong,
+        .center-information strong {
+          display: block;
+          font-size: 11.5px;
+        }
+
+        .center-information {
+          min-width: 170px;
+        }
+
+        .status-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 5px 8px;
+          border-radius: 6px;
+          font-size: 10px;
+          font-weight: 700;
+          white-space: nowrap;
+        }
+
+        .status-badge.approved {
+          background: var(--sivec-primary-light);
+          color: var(--sivec-primary);
+        }
+
+        .status-badge.pending {
+          background: var(--sivec-yellow-light);
+          color: #927000;
+        }
+
+        /* PARENTS */
+
+        .parents-section {
+          padding: 14px 18px;
+        }
+
+        .parents-title {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 9px;
+          color: var(--text-muted);
+          font-size: 9px;
+          font-weight: 750;
+          text-transform: uppercase;
+          letter-spacing: .5px;
+        }
+
+        .parents-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+        }
+
+        .parent-card {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          padding: 10px;
+          border: 1px solid #edf0ee;
+          border-radius: 8px;
+        }
+
+        .parent-icon {
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          border-radius: 8px;
+        }
+
+        .parent-icon.father {
+          background: var(--sivec-primary-light);
+          color: var(--sivec-primary);
+        }
+
+        .parent-icon.mother {
+          background: var(--sivec-yellow-light);
+          color: #967400;
+        }
+
+        .parent-card small {
+          display: block;
+          color: var(--text-muted);
+          font-size: 8px;
+          font-weight: 750;
+        }
+
+        .parent-card strong {
+          display: block;
+          margin-top: 2px;
+          font-size: 11.5px;
+        }
+
+        .parent-card span {
+          display: block;
+          margin-top: 1px;
+          color: var(--text-muted);
+          font-size: 9.5px;
+        }
+
+        /* ACTIONS */
+
+        .birth-actions {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 9px 18px;
+          border-top: 1px solid var(--border);
+          background: #fcfdfc;
+        }
+
+        .action-button {
+          display: inline-flex;
           align-items: center;
           justify-content: center;
           gap: 6px;
-          padding: 8px;
-          font-size: 12.5px;
+          min-height: 32px;
+          padding: 6px 10px;
+          border: 1px solid transparent;
+          border-radius: 7px;
+          background: transparent;
+          color: var(--text-secondary);
+          font-size: 10.5px;
+          font-weight: 650;
+          cursor: pointer;
+          transition: .18s;
+        }
+
+        .action-button:hover {
+          background: #f0f3f1;
+          color: var(--text-main);
+        }
+
+        .action-button.validate {
+          background: var(--sivec-primary);
+          color: white;
+        }
+
+        .action-button.validate:hover {
+          background: var(--sivec-primary-dark);
+        }
+
+        .action-button:disabled {
+          opacity: .6;
+          cursor: not-allowed;
+        }
+
+        .certified-label {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 5px;
+          flex: 1;
+          color: var(--sivec-primary);
+          font-size: 10.5px;
           font-weight: 700;
-          color: var(--sivec-green);
         }
 
-        .fb-empty-state {
+        /* EMPTY */
+
+        .empty-state {
+          padding: 55px 20px;
           text-align: center;
-          padding: 40px 20px;
+          background: white;
+          border: 1px solid var(--border);
+          border-radius: 13px;
         }
 
-        .fb-empty-icon {
-          width: 70px;
-          height: 70px;
-          border-radius: 50%;
-          background: var(--fb-hover);
-          color: var(--fb-text-muted);
+        .empty-icon {
+          width: 58px;
+          height: 58px;
           display: flex;
           align-items: center;
           justify-content: center;
-          margin: 0 auto 16px auto;
+          margin: 0 auto 13px;
+          border-radius: 50%;
+          background: #f1f4f2;
+          color: var(--text-muted);
         }
 
-        .fb-table-avatar {
-          width: 30px;
-          height: 30px;
-          border-radius: 50%;
-          background: var(--sivec-green-light);
-          color: var(--sivec-green);
+        .empty-state h3 {
+          margin: 0;
+          font-size: 16px;
+        }
+
+        .empty-state p {
+          margin: 5px 0 15px;
+          color: var(--text-secondary);
+          font-size: 12px;
+        }
+
+        .reset-button {
+          padding: 8px 13px;
+          border: none;
+          border-radius: 7px;
+          background: var(--sivec-primary);
+          color: white;
+          font-size: 11px;
+          font-weight: 650;
+          cursor: pointer;
+        }
+
+        /* TABLE */
+
+        .table-card {
+          overflow: hidden;
+          background: white;
+          border: 1px solid var(--border);
+          border-radius: 13px;
+          box-shadow: var(--shadow);
+        }
+
+        .sivec-table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        .sivec-table th {
+          padding: 12px 14px;
+          background: #f8faf9;
+          border-bottom: 1px solid var(--border);
+          color: var(--text-muted);
+          font-size: 9px;
+          font-weight: 800;
+          letter-spacing: .5px;
+          text-align: left;
+        }
+
+        .sivec-table td {
+          padding: 13px 14px;
+          border-bottom: 1px solid #edf0ee;
+          vertical-align: middle;
+          font-size: 11px;
+        }
+
+        .sivec-table tbody tr:last-child td {
+          border-bottom: none;
+        }
+
+        .sivec-table tbody tr:hover {
+          background: #fbfcfb;
+        }
+
+        .table-act-number {
+          color: var(--sivec-primary);
+          font-size: 10.5px;
+        }
+
+        .table-child {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .table-avatar {
+          width: 31px;
+          height: 31px;
           display: flex;
           align-items: center;
           justify-content: center;
+          border-radius: 8px;
+          background: var(--sivec-primary-light);
+          color: var(--sivec-primary);
+          font-size: 9px;
+          font-weight: 800;
+        }
+
+        .table-child strong {
+          display: block;
+          font-size: 11px;
+        }
+
+        .table-child small,
+        .sivec-table td > small,
+        .sivec-table td > div > small {
+          display: block;
+          margin-top: 3px;
+          color: var(--text-muted);
+          font-size: 9px;
+        }
+
+        .table-parents span {
+          display: block;
+          margin: 2px 0;
+          color: var(--text-secondary);
+          font-size: 9.5px;
+        }
+
+        .table-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 5px;
+        }
+
+        .table-action {
+          width: 29px;
+          height: 29px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          background: white;
+          color: var(--text-secondary);
+          cursor: pointer;
+        }
+
+        .table-action:hover {
+          background: #f4f6f5;
+        }
+
+        .table-action.validate {
+          color: var(--sivec-primary);
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 1050px) {
+          .statistics-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+
+          .quick-actions {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .sivec-dashboard {
+            padding: 16px;
+          }
+
+          .dashboard-header {
+            align-items: flex-start;
+            flex-direction: column;
+          }
+
+          .dashboard-title {
+            font-size: 23px;
+          }
+
+          .refresh-button {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .welcome-panel {
+            align-items: flex-start;
+            flex-direction: column;
+          }
+
+          .welcome-status {
+            align-self: flex-start;
+          }
+
+          .statistics-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+          }
+
+          .stat-card {
+            min-height: 145px;
+            padding: 14px;
+          }
+
+          .stat-number {
+            font-size: 23px;
+          }
+
+          .acts-header {
+            align-items: flex-start;
+          }
+
+          .act-information {
+            align-items: flex-start;
+            flex-direction: column;
+          }
+
+          .center-information {
+            min-width: 0;
+          }
+
+          .parents-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .birth-actions {
+            flex-wrap: wrap;
+          }
+
+          .action-button {
+            flex: 1;
+          }
+
+          .certified-label {
+            width: 100%;
+            flex-basis: 100%;
+          }
+        }
+
+        @media (max-width: 520px) {
+          .statistics-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .welcome-content {
+            align-items: flex-start;
+          }
+
+          .welcome-panel h2 {
+            font-size: 16px;
+          }
+
+          .welcome-panel p {
+            line-height: 1.5;
+          }
+
+          .filter-list {
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            padding-bottom: 4px;
+          }
+
+          .filter-button {
+            white-space: nowrap;
+          }
+
+          .birth-card-header {
+            padding: 14px;
+          }
+
+          .child-avatar {
+            width: 40px;
+            height: 40px;
+          }
+
+          .child-name-line h3 {
+            font-size: 13px;
+          }
+
+          .act-information {
+            margin: 0 14px;
+          }
+
+          .parents-section {
+            padding: 12px 14px;
+          }
+
+          .birth-actions {
+            padding: 8px 12px;
+          }
+
+          .action-button {
+            font-size: 9.5px;
+            padding: 6px;
+          }
         }
       `}</style>
     </div>
