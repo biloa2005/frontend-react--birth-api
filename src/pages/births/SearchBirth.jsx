@@ -159,7 +159,12 @@ const SearchBirth = () => {
               <Search size={18} className="fb-search-icon" />
               <input
                 type="text"
-                className="fb-search-input"
+                style={{
+                  border: "2px solid #bbc5cc",
+                  borderRadius: "15px",
+                }}
+                className="fb-search-input fb-gris"
+                
                 placeholder="Ex: ACT-2026-00142 ou numéro d'enregistrement..."
                 value={actNumber}
                 onChange={(e) => setActNumber(e.target.value)}
@@ -167,6 +172,10 @@ const SearchBirth = () => {
               {actNumber && (
                 <button
                   type="button"
+                   style={{
+                  border: "2px solid #bbc5cc",
+                  borderRadius: "5px",
+                }}
                   className="fb-search-clear"
                   onClick={() => setActNumber("")}
                 >
@@ -200,16 +209,16 @@ const SearchBirth = () => {
           <small className="text-muted">Exemples rapides :</small>
           <button
             type="button"
-            className="fb-pill small py-1"
+            className="fb-btn fb-btn-gris px-4"
             onClick={() => {
               setActNumber("ACT-2026-00142");
             }}
           >
-            ACT-2026-00142
+            <span>ACT-2026-00142</span>
           </button>
           <button
             type="button"
-            className="fb-pill small py-1"
+            className="fb-btn fb-btn-gris px-4"
             onClick={() => {
               setActNumber("ACT-2026-00141");
             }}

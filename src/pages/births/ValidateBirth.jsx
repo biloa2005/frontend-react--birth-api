@@ -231,6 +231,10 @@ const ValidateBirth = () => {
                 <Search size={18} className="fb-search-icon" />
                 <input
                   type="text"
+                  style={{
+                    border: "2px solid #bbc5cc",
+                    borderRadius: "15px",
+                  }}
                   className="fb-search-input"
                   placeholder="Ex: ACT-2026-00142 ou ID numérique..."
                   value={identifier}

@@ -318,27 +318,32 @@ const BirthTable = () => {
             </div>
           </div>
 
-          <div className="col-12 col-md-6">
+          <div className="col-12 col-md-6"> 
             <div className="d-flex gap-2 justify-content-md-end flex-wrap">
               <button
-                className={`fb-pill ${statusFilter === "ALL" ? "active" : ""}`}
+              
+                className={`fb-btn fb-btn-green px-4 ${statusFilter === "ALL" ? "active" : ""}`}
                 onClick={() => setStatusFilter("ALL")}
               >
-                Tous ({births.length || fallbackList.length})
+                
+      
+                Tous 
+              
+                
               </button>
 
               <button
-                className={`fb-pill pill-filter-green ${
+                className={`fb-btn fb-btn-red px-4 ${
                   statusFilter === "APPROVED" ? "active" : ""
                 }`}
                 onClick={() => setStatusFilter("APPROVED")}
               >
-                <span className="fb-pill-dot dot-green"></span>
+                <span className="fb-pill-dot dot-yellow "></span>
                 Validés
               </button>
 
               <button
-                className={`fb-pill pill-filter-yellow ${
+                className={`fb-btn fb-btn-yellow px-4 ${
                   statusFilter === "PENDING" ? "active" : ""
                 }`}
                 onClick={() => setStatusFilter("PENDING")}
@@ -452,6 +457,7 @@ const BirthTable = () => {
                       <td>
                         {isApproved ? (
                           <span className="fb-badge fb-badge-green">
+            
                             <CheckCircle2 size={12} />
                             Validé
                           </span>
